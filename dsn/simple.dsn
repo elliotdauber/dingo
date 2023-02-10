@@ -1,0 +1,44 @@
+class Config;
+
+class ServerImpl {
+    dependencies: [Server];
+}
+class FollowerImpl : ServerImpl;
+class LeaderImpl : ServerImpl {
+    dependencies : [Config];
+}
+class CandidateImpl : ServerImpl;
+
+class INetworkInterface;
+class NetworkInterface : INetworkInterface;
+class MessageQueue;
+class MessageTransporter {
+    dependencies: [NetworkInterface, MessageQueue];
+}
+
+class Server {
+    dependencies : [ServerImpl, MessageTransporter];
+}
+
+class IVisitor;
+class PrintingVisitor : IVisitor;
+class ExecuteVistor : IVisitor {
+    dependencies : [Config];
+}
+
+define pattern Visitor {
+    member acceptors: classes;
+    member visitor_base: interface;
+
+    spec acceptors: {
+        dependencies: [visitor_base]
+        public void accept(visitor_base*);
+    }
+
+    spec visitor_base: {
+        dependencies: [acceptors]
+        for a in acceptors : {
+            public virtual void visit_{a}(a*) {}
+        }
+    }
+}

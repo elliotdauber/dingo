@@ -1,0 +1,50 @@
+define pattern MyPattern {
+    hi : module;
+    hey : module[];
+
+    spec hi : [] {
+        +$@ void mymeth();
+        - int myothermeth(arg, argye);
+    }
+
+    spec hey : [hi] {
+
+    }
+}
+
+define pattern Singleton {
+    singleton : module;
+
+    spec singleton : {
+        - constructor <{singleton}>();
+        - constructor <{singleton}>(singleton&);
+    }
+}
+
+define pattern Visitor {
+    acceptors : module[];
+    visitor_base: module;
+
+    spec acceptors : [visitor_base] {
+        + void accept(visitor_base*);
+    }
+
+    spec visitor_base : [acceptors] {
+        for a in acceptors : {
+            +@ void <visit{a}>(a*);
+        }
+    }
+}
+
+module Ye;
+module MyMod < Ye;
+module MyOtherMod < Ye : [MyMod, Ye];
+
+apply pattern MyPattern {
+    hi : MyMod;
+}
+
+apply pattern Visitor {
+    acceptors : [Ye, MyMod];
+    visitor_base : MyOtherMod;
+}

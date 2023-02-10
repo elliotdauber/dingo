@@ -1,0 +1,38 @@
+digraph example {
+    rankdir=LR;
+    node [shape=circle];
+    Config [label="Config"];
+    ServerImpl [label="ServerImpl"];
+    FollowerImpl [label="FollowerImpl"];
+    LeaderImpl [label="LeaderImpl"];
+    CandidateImpl [label="CandidateImpl"];
+    INetworkInterface [label="INetworkInterface"];
+    NetworkInterface [label="NetworkInterface"];
+    MessageQueue [label="MessageQueue"];
+    MessageTransporter [label="MessageTransporter"];
+    Server [label="Server"];
+
+    ServerImpl -> Server[arrowhead=normal];
+    FollowerImpl -> ServerImpl[arrowhead=odot];
+    LeaderImpl -> ServerImpl[arrowhead=odot];
+    LeaderImpl -> Config[arrowhead=normal];
+    CandidateImpl -> ServerImpl[arrowhead=odot];
+    NetworkInterface -> INetworkInterface[arrowhead=odot];
+    MessageTransporter -> NetworkInterface[arrowhead=normal];
+    MessageTransporter -> MessageQueue[arrowhead=normal];
+    Server -> ServerImpl[arrowhead=normal];
+    Server -> MessageTransporter[arrowhead=normal];
+
+    subgraph visitor {
+        node [style=filled, fillcolor=lightblue];
+        IVisitor [label="IVisitor"];
+        PrintingVisitor [label="PrintingVisitor"];
+        ExecuteVistor [label="ExecuteVistor"];
+        PrintingVisitor -> IVisitor[arrowhead=odot];
+        ExecuteVistor -> IVisitor[arrowhead=odot];
+        ExecuteVistor -> Config[arrowhead=normal];
+    }
+label="The System"
+style=filled
+fillcolor=yellow
+}

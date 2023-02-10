@@ -1,0 +1,83 @@
+define pattern Singleton {
+    singleton: module;
+
+    spec singleton: {
+        - singleton singleton();
+        - singleton singleton(singleton&);
+        +$ singleton GetInstance();
+    }
+}
+
+define pattern Visitor {
+    acceptors: module[];
+    visitor_base: module;
+
+    spec acceptors : [visitor_base] {
+        + void accept(visitor_base*);
+    }
+
+    spec visitor_base : [acceptors];
+}
+
+define pattern State {
+    context : module;
+    state_base : module;
+
+    spec context : [state_base] {
+        + state_base get_state_base();
+    }
+}
+
+define pattern AbstractFactory {
+    factory_base: module;
+    factories : module[];
+    product_base: module;
+    
+    spec factory_base : [product_base] {
+        +@ product_base create();
+    }
+
+    spec factories : [product_base] {
+        + product_base create();
+    }
+}
+
+module Shape;
+module Circle < Shape;
+module Square < Shape;
+
+module ShapeFactory;
+module CircleFactory < ShapeFactory : [Circle];
+module SquareFactory < ShapeFactory : [Square];
+
+apply pattern AbstractFactory {
+    factory_base: ShapeFactory;
+    factories: [CircleFactory, SquareFactory];
+    product_base: Shape;
+}
+
+module Config;
+
+apply pattern Singleton {
+    singleton: Config;
+}
+
+apply pattern Singleton {
+    singleton : StateMachine;
+}
+
+module StateMachine : [Config];
+module IState : {
+    +@ void hi();
+}
+module GoodState < IState : [Config] {
+    + void hi();
+}
+module BadState < IState : {
+    + void hi();
+}
+
+apply pattern State {
+    context : StateMachine;
+    state_base: IState;
+}

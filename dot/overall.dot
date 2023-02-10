@@ -1,0 +1,8 @@
+digraph example {
+rankdir=LR;
+node [shape=circle];
+
+label="The System"
+style=filled
+fillcolor=yellow
+}

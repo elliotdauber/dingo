@@ -1,0 +1,15 @@
+digraph example {
+rankdir=LR;
+node [shape=circle];
+Ye [label="Ye"];
+MyMod [label="MyMod"];
+MyOtherMod [label="MyOtherMod"];
+
+MyMod -> Ye[arrowhead=odot];
+MyOtherMod -> Ye[arrowhead=odot];
+MyOtherMod -> MyMod[arrowhead=normal];
+MyOtherMod -> Ye[arrowhead=normal];
+label="The System"
+style=filled
+fillcolor=yellow
+}

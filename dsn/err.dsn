@@ -1,0 +1,12 @@
+module MyModule;
+module MyOtherModule < MyModule;
+
+define pattern BadPattern {
+    a_field: module;
+    mul_fields: module[];
+}
+
+apply pattern BadPattern {
+    a_field: MyModule;
+    mul_fields: [MyModule];
+}

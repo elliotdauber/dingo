@@ -1,0 +1,52 @@
+define pattern Singleton {
+    class: singleton;
+
+    singleton: {
+        - singleton();
+        - singleton(singleton&);
+        +$ singleton GetInstance() {
+            static singleton instance;
+            return instance;
+        };
+    }
+}
+
+define pattern Visitor {
+    classes: acceptors;
+    interface: visitor_base;
+
+    acceptors : [visitor_base] {
+        dependencies: [visitor_base];
+        + void accept(visitor_base*);
+    }
+
+    visitor_base : [acceptors] {
+        dependencies: [acceptors];
+        for a in acceptors : {
+            +@ void visit_{a}(a*) {}
+        }
+    }
+}
+
+define pattern State {
+    class: context;
+    interface: state_base;
+
+    context : {
+        private state_base;
+    }
+}
+
+define pattern AbstractFactory {
+    interface: factory_base;
+    classes: factories;
+    interface: product_base;
+    
+    factory_base : {
+        public virtual product_base create();
+    }
+
+    factories : {
+        public product_base create() override;
+    }
+}

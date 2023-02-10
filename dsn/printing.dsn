@@ -1,0 +1,19 @@
+define pattern Singleton {
+    singleton : module;
+
+    spec singleton : {
+        +$ singleton GetInstance(singleton);
+    }
+}
+
+module PrinterConfig;
+module Config;
+
+apply pattern Singleton {
+    singleton : Config;
+}
+
+module IPrinter : [PrinterConfig];
+module Printer < IPrinter : [PrinterConfig, Config] {
+    + void print();
+}
