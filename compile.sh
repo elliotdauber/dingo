@@ -1,0 +1,1 @@
+compiler/compiler dsn/$1.dsn

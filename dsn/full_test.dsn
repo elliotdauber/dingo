@@ -16,7 +16,11 @@ define pattern Visitor {
         + void accept(visitor_base*);
     }
 
-    spec visitor_base : [acceptors];
+    spec visitor_base : [acceptors] {
+        for a in acceptors : {
+            + void visit_a(a*);
+        }
+    }
 }
 
 define pattern State {
@@ -80,4 +84,14 @@ module BadState < IState : {
 apply pattern State {
     context : StateMachine;
     state_base: IState;
+}
+
+module IVisitor;
+module IExpr;
+module AddExpr;
+module NumExpr;
+
+apply pattern Visitor {
+    acceptors: [IExpr, AddExpr, NumExpr];
+    visitor_base: IVisitor;
 }

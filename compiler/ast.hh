@@ -123,16 +123,32 @@ public:
         return { this };
     }
 
+    //TODO: delete!
+    string get_module_name_from_bindings(string name, map<string, AbstractModuleList*> bindings)
+    {
+        if (bindings.count(name)) {
+            AbstractModuleList* result = bindings[name];
+            if (result->type->is_array) {
+                //TODO: better error message!
+                cerr << "Error using the array type " << name << "." << endl;
+                exit(1);
+            }
+            //TODO: this is bad, rethink abstraction
+            return result->get_modules()[0]->name;
+        }
+        return name;
+    }
+
     //TODO: replace!
-    string str()
+    string str(map<string, AbstractModuleList*> bindings)
     {
         ostringstream oss;
         for (size_t i = 0; i < decorators->items.size(); i++) {
             oss << decorators->items[i]->decorator;
         }
-        oss << " " << ret_type << " " << name << "(";
+        oss << " " << get_module_name_from_bindings(ret_type, bindings) << " " << get_module_name_from_bindings(name, bindings) << "(";
         for (size_t i = 0; i < args->items.size(); i++) {
-            oss << args->items[i]->type;
+            oss << get_module_name_from_bindings(args->items[i]->type, bindings);
             oss << args->items[i]->qualifiers;
             if (i != args->items.size() - 1)
                 oss << ", ";
@@ -161,7 +177,15 @@ public:
 
     vector<ModuleMethod*> get_methods() override
     {
-        return {}; //TODO!!
+        vector<ModuleMethod*> result {};
+        for (size_t i = 0; i < methods->items.size(); i++) {
+            vector<ModuleMethod*> method_list = methods->items[i]->get_methods();
+            for (size_t j = 0; j < method_list.size(); j++) {
+                ModuleMethod* method = method_list[j];
+                result.push_back(method);
+            }
+        }
+        return result;
     }
 };
 

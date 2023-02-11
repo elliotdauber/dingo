@@ -96,16 +96,30 @@ LoweringVisitor::LoweringVisitor(ostream& stream)
 {
 }
 
-void update_module(DIR::Module* module, ModuleDecl* decl)
+AbstractModuleList* get_modules_from_bindings(Module* module, map<string, AbstractModuleList*> bindings)
+{
+    if (bindings.count(module->name)) {
+        return bindings[module->name];
+    }
+    return module;
+}
+
+void update_module(DIR::Module* module, ModuleDecl* decl, map<string, AbstractModuleList*> bindings)
 {
     ModuleList* parents = decl->parent_modules;
     for (size_t i = 0; i < parents->items.size(); i++) {
-        module->parents.insert(parents->items[i]->name);
+        vector<Module*> module_list = get_modules_from_bindings(parents->items[i], bindings)->get_modules();
+        for (size_t j = 0; j < module_list.size(); j++) {
+            module->parents.insert(module_list[j]->name);
+        }
     }
 
     ModuleList* dependencies = decl->dependencies;
     for (size_t i = 0; i < dependencies->items.size(); i++) {
-        module->dependencies.insert(dependencies->items[i]->name);
+        vector<Module*> module_list = get_modules_from_bindings(dependencies->items[i], bindings)->get_modules();
+        for (size_t j = 0; j < module_list.size(); j++) {
+            module->parents.insert(module_list[j]->name);
+        }
     }
 
     ModuleMethodList* methods = decl->methods;
@@ -113,7 +127,7 @@ void update_module(DIR::Module* module, ModuleDecl* decl)
         AbstractModuleMethod* abstract_method = methods->items[i];
         vector<ModuleMethod*> methods = abstract_method->get_methods();
         for (size_t j = 0; j < methods.size(); j++) {
-            module->methods.insert(methods[j]->str());
+            module->methods.insert(methods[j]->str(bindings));
         }
     }
 }
@@ -131,7 +145,7 @@ void LoweringVisitor::visit_program(Program* program)
         }
         module->name = name;
         module_map[name] = module;
-        update_module(module, decl);
+        update_module(module, decl, {});
     }
 
     //TODO: check for circular inheritance hierarchies
@@ -202,11 +216,14 @@ void LoweringVisitor::visit_program(Program* program)
             ostringstream pattern_instance_name;
             pattern_instance_name << name << i;
 
+            //TODO: use bindings here to change spec names
             for (size_t k = 0; k < module_list.size(); k++) {
+                map<string, AbstractModuleList*> spec_member_bindings = member_bindings;
+                spec_member_bindings[spec_name] = module_list[k];
                 string module_name = module_list[k]->name;
                 //TODO: is this guaranteed to exist?
                 DIR::Module* cur_module = module_map[module_name];
-                update_module(cur_module, spec->module_decl);
+                update_module(cur_module, spec->module_decl, spec_member_bindings);
                 cur_module->patterns.insert(pattern_instance_name.str());
             }
         }
@@ -217,23 +234,34 @@ void LoweringVisitor::visit_program(Program* program)
         cout << name;
         if (module->parents.size() > 0) {
             cout << " < ";
+            int idx = 0;
             for (auto it = module->parents.begin(); it != module->parents.end(); ++it) {
                 cout << *it;
-                cout << ", ";
+                if (idx++ != module->parents.size() - 1)
+                    cout << ", ";
             }
         }
         cout << " : [";
+
+        int idx = 0;
         for (auto it = module->dependencies.begin(); it != module->dependencies.end(); ++it) {
-            cout << *it << ", ";
+            cout << *it;
+            if (idx++ != module->dependencies.size() - 1)
+                cout << ", ";
         }
         cout << "] {" << endl;
         for (auto it = module->methods.begin(); it != module->methods.end(); ++it) {
             cout << "    " << *it << ";" << endl;
         }
         cout << "}" << endl;
-        cout << "patterns: ";
-        for (auto it = module->patterns.begin(); it != module->patterns.end(); ++it) {
-            cout << *it << ", ";
+        if (module->patterns.size() > 0) {
+            cout << "patterns: ";
+            idx = 0;
+            for (auto it = module->patterns.begin(); it != module->patterns.end(); ++it) {
+                cout << *it;
+                if (idx++ != module->patterns.size() - 1)
+                    cout << ", ";
+            }
         }
         cout << endl
              << endl;

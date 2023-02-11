@@ -184,7 +184,7 @@ module_decl_no_keyword : module_header SEMICOLON {$$ = new ModuleDecl($1.first, 
 
 module_decl : MODULE module_decl_no_keyword {$$ = $2;};
 
-module_header : ID LESSTHAN ID {$$ = std::pair<Module*, ModuleList*>(new Module($1), new ModuleList(new Module($3)));}
+module_header : ID LESSTHAN modules {$$ = std::pair<Module*, ModuleList*>(new Module($1), $3);}
               | ID {$$ = std::pair<Module*, ModuleList*>(new Module($1), new ModuleList());};
 
 
