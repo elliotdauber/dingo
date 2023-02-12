@@ -98,7 +98,7 @@ public:
     vector<Method*> methods;
 
     vector<DIR::Module*> get_modules() override { return { this }; }
-    Kind kind() override { return List; }
+    Kind kind() override { return Single; }
 
     void accept(Visitor* v) override;
 };
@@ -123,7 +123,7 @@ public:
         modules.push_back(to_add);
     }
 
-    Kind kind() override { return Single; }
+    Kind kind() override { return List; }
 
     void accept(Visitor* v) override;
 

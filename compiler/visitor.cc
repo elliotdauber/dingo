@@ -139,7 +139,7 @@ void ModuleUpdaterVisitor::visit_module_method(ModuleMethod* method)
     } else {
         DIR::ModuleComposite* composite = modules[ret_type];
         if (composite->kind() == DIR::ModuleComposite::Kind::List) {
-            cerr << "Attempting to assign module[] type " << ret_type << " to an return val, which should be a module type." << endl;
+            cerr << "Attempting to assign module[] type " << ret_type << " to a return val, which should be a module type." << endl;
             exit(1);
         } else {
             vector<DIR::Module*> m = composite->get_modules();
@@ -258,20 +258,30 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
             exit(1);
         }
 
-        DIR::ModuleList* module_list = new DIR::ModuleList();
         vector<Module*> assignment_modules = assignment->assignment->get_modules();
 
-        for (size_t k = 0; k < assignment_modules.size(); k++) {
-            if (!modules.count(assignment_modules[k]->name)) {
-                cerr << "Tried to apply pattern with module " << assignment_modules[k]->name << " for pattern " << pattern_appl->name << ", field " << member_name << ", but this module does not exist." << endl;
+        if (assignment->assignment->type->is_array) {
+            DIR::ModuleList* module_list = new DIR::ModuleList();
+
+            for (size_t k = 0; k < assignment_modules.size(); k++) {
+                if (!modules.count(assignment_modules[k]->name)) {
+                    cerr << "Tried to apply pattern with module " << assignment_modules[k]->name << " for pattern " << pattern_appl->name << ", field " << member_name << ", but this module does not exist." << endl;
+                    exit(1);
+                }
+                DIR::ModuleComposite* composite = modules[assignment_modules[k]->name];
+                module_list->add(composite);
+            }
+
+            //TODO: make sure we aren't overwriting something??
+            modules[defn_member->name] = module_list;
+        } else {
+            //TODO: is this guaranteed to be safe?
+            if (!modules.count(assignment_modules[0]->name)) {
+                cerr << "Tried to apply pattern with module " << assignment_modules[0]->name << " for pattern " << pattern_appl->name << ", field " << member_name << ", but this module does not exist." << endl;
                 exit(1);
             }
-            DIR::ModuleComposite* composite = modules[assignment_modules[k]->name];
-            module_list->add(composite);
+            modules[defn_member->name] = modules[assignment_modules[0]->name];
         }
-
-        //TODO: make sure we aren't overwriting something??
-        modules[defn_member->name] = module_list;
     }
 
     SpecList* specs = pattern_defn->specs;
@@ -320,34 +330,3 @@ void PatternApplierVisitor::visit_program(Program* program)
         program->pattern_appls[i]->accept(this);
     }
 }
-
-// void DIRLoweringVisitor::
-
-// void DIRLoweringVisitor::visit_module(Module* module)
-// {
-
-// }
-// void DIRLoweringVisitor::visit_module_list(ModuleList* class_list)
-// {
-// }
-// void DIRLoweringVisitor::visit_decorator(Decorator* decorator)
-// {
-// }
-// void DIRLoweringVisitor::visit_decorator_list(DecoratorList* decorator_list)
-// {
-// }
-// void DIRLoweringVisitor::visit_method_arg(MethodArg* arg)
-// {
-// }
-// void DIRLoweringVisitor::visit_method_arg_list(MethodArgList* arg_list)
-// {
-// }
-// void DIRLoweringVisitor::visit_module_method(ModuleMethod* method)
-// {
-// }
-// void DIRLoweringVisitor::visit_module_method_list(ModuleMethodList* method_list)
-// {
-// }
-// void DIRLoweringVisitor::visit_for_each(ForEach* for_each)
-// {
-// }

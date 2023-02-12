@@ -1,7 +1,61 @@
 digraph example {
 rankdir=LR;
 node [shape=circle];
+AddExpr [label="AddExpr
++ IVisitor accept(IVisitor*)"];
+BadState [label="BadState
++ StateMachine hi()"];
+Circle [label="Circle"];
+CircleFactory [label="CircleFactory
++ Shape create()"];
+Config [label="Config
+$+ Config GetInstance()
+- Config singleton(Config&)
+- Config singleton()"];
+GoodState [label="GoodState
++ StateMachine hi()"];
+IExpr [label="IExpr
++ IVisitor accept(IVisitor*)"];
+IState [label="IState
+@+ StateMachine hi()"];
+IVisitor [label="IVisitor
++ IExpr visit_IExpr(IExpr*)
++ AddExpr visit_AddExpr(AddExpr*)
++ NumExpr visit_NumExpr(NumExpr*)"];
+NumExpr [label="NumExpr
++ IVisitor accept(IVisitor*)"];
+Shape [label="Shape"];
+ShapeFactory [label="ShapeFactory
+@+ Shape create()"];
+Square [label="Square"];
+SquareFactory [label="SquareFactory
++ Shape create()"];
+StateMachine [label="StateMachine
+$+ StateMachine GetInstance()
+- StateMachine singleton(StateMachine&)
+- StateMachine singleton()
++ IState get_state_base()"];
 
+AddExpr -> IVisitor[arrowhead=normal];
+BadState -> IState[arrowhead=odot];
+Circle -> Shape[arrowhead=odot];
+CircleFactory -> ShapeFactory[arrowhead=odot];
+CircleFactory -> Shape[arrowhead=normal];
+CircleFactory -> Circle[arrowhead=normal];
+GoodState -> IState[arrowhead=odot];
+GoodState -> Config[arrowhead=normal];
+IExpr -> IVisitor[arrowhead=normal];
+IVisitor -> IExpr[arrowhead=normal];
+IVisitor -> AddExpr[arrowhead=normal];
+IVisitor -> NumExpr[arrowhead=normal];
+NumExpr -> IVisitor[arrowhead=normal];
+ShapeFactory -> Shape[arrowhead=normal];
+Square -> Shape[arrowhead=odot];
+SquareFactory -> ShapeFactory[arrowhead=odot];
+SquareFactory -> Shape[arrowhead=normal];
+SquareFactory -> Square[arrowhead=normal];
+StateMachine -> Config[arrowhead=normal];
+StateMachine -> IState[arrowhead=normal];
 label="The System"
 style=filled
 fillcolor=yellow
