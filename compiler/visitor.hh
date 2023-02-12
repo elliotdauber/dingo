@@ -41,24 +41,6 @@ private:
     ostream& stream;
 };
 
-class NodeGenVisitor : public Visitor {
-public:
-    NodeGenVisitor(ostream& stream);
-    void visit_program(Program* program) override;
-
-private:
-    ostream& stream;
-};
-
-class EdgeGenVisitor : public Visitor {
-public:
-    EdgeGenVisitor(ostream& stream);
-    void visit_program(Program* program) override;
-
-private:
-    ostream& stream;
-};
-
 class ModuleCreatorVisitor : public Visitor {
 public:
     ModuleCreatorVisitor()

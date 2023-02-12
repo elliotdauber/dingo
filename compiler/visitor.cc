@@ -38,56 +38,6 @@ void PrintingVisitor::visit_module_list(ModuleList* modules)
 }
 
 //////////////////////////////////////////////////
-//                NodeGenVisitor                //
-//////////////////////////////////////////////////
-
-NodeGenVisitor::NodeGenVisitor(ostream& stream)
-    : stream(stream)
-{
-}
-
-void NodeGenVisitor::visit_program(Program* program)
-{
-    stream << "digraph example {" << endl;
-    stream << "rankdir=LR;" << endl;
-    stream << "node [shape=circle];" << endl;
-    for (size_t i = 0; i < program->module_decls.size(); i++) {
-        string name = program->module_decls[i]->module->name;
-        stream << name << " [label=\"" << name << "\"];" << endl;
-    }
-    // stream << "}" << endl;
-}
-
-//////////////////////////////////////////////////
-//                EdgeGenVisitor                //
-//////////////////////////////////////////////////
-
-EdgeGenVisitor::EdgeGenVisitor(ostream& stream)
-    : stream(stream)
-{
-}
-
-void EdgeGenVisitor::visit_program(Program* program)
-{
-    stream << endl;
-    for (size_t i = 0; i < program->module_decls.size(); i++) {
-        string name = program->module_decls[i]->module->name;
-        ModuleList* parents = program->module_decls[i]->parent_modules;
-        for (size_t j = 0; j < parents->items.size(); j++) {
-            stream << name << " -> " << parents->items[j]->name << "[arrowhead=odot];" << endl;
-        }
-        for (size_t j = 0; j < program->module_decls[i]->dependencies->items.size(); j++) {
-            string dep_name = program->module_decls[i]->dependencies->items[j]->name;
-            stream << name << " -> " << dep_name << "[arrowhead=normal];" << endl;
-        }
-    }
-    stream << "label=\"The System\"" << endl;
-    stream << "style=filled" << endl;
-    stream << "fillcolor=yellow" << endl;
-    stream << "}" << endl;
-}
-
-//////////////////////////////////////////////////
 //                LoweringVisitor               //
 //////////////////////////////////////////////////
 

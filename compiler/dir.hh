@@ -10,15 +10,7 @@ using namespace std;
 
 namespace DIR {
 
-class DIRModule {
-public:
-    DIRModule();
-    string name;
-    set<string> parents;
-    set<string> patterns;
-    set<string> dependencies;
-    set<string> methods;
-};
+class Visitor;
 
 class Pattern {
     string name;
@@ -57,17 +49,22 @@ public:
     string name;
     vector<Type*> args;
 
+    void print(ostream& stream)
+    {
+        stream << decorators;
+        stream << " " << ret_type->type << " " << name << "(";
+        for (size_t i = 0; i < args.size(); i++) {
+            stream << args[i]->type;
+            stream << args[i]->qualifiers;
+            if (i != args.size() - 1)
+                stream << ", ";
+        }
+        stream << ")";
+    }
+
     void print()
     {
-        cout << decorators;
-        cout << " " << ret_type->type << " " << name << "(";
-        for (size_t i = 0; i < args.size(); i++) {
-            cout << args[i]->type;
-            cout << args[i]->qualifiers;
-            if (i != args.size() - 1)
-                cout << ", ";
-        }
-        cout << ")";
+        print(cout);
     }
 };
 
@@ -82,6 +79,7 @@ public:
 
     virtual vector<DIR::Module*> get_modules() = 0;
     virtual Kind kind() = 0;
+    virtual void accept(Visitor* v) = 0;
 };
 
 class Module : public ModuleComposite {
@@ -101,6 +99,8 @@ public:
 
     vector<DIR::Module*> get_modules() override { return { this }; }
     Kind kind() override { return List; }
+
+    void accept(Visitor* v) override;
 };
 
 class ModuleList : public ModuleComposite {
@@ -125,9 +125,55 @@ public:
 
     Kind kind() override { return Single; }
 
+    void accept(Visitor* v) override;
+
 private:
     vector<ModuleComposite*> modules;
 };
+
+class Visitor {
+public:
+    virtual void visit_module_list(ModuleList* module_list) { }
+    virtual void visit_module(Module* module) { }
+};
+
+class NodeGenVisitor : public Visitor {
+public:
+    NodeGenVisitor(ostream& stream)
+        : stream(stream)
+    {
+    }
+    void visit_module_list(ModuleList* module_list) override;
+    void visit_module(Module* module) override;
+
+private:
+    ostream& stream;
+};
+
+class EdgeGenVisitor : public Visitor {
+public:
+    EdgeGenVisitor(ostream& stream)
+        : stream(stream)
+    {
+    }
+    void visit_module_list(ModuleList* module_list) override;
+    void visit_module(Module* module) override;
+
+private:
+    ostream& stream;
+};
+
+// class PrinterVisitor : public Visitor {
+// public:
+//     PrinterVisitor(ostream& stream)
+//         : stream(stream)
+//     {
+//     }
+//     void visit_module(Module* module) override;
+
+// private:
+//     ostream& stream;
+// };
 
 } //end namespace DIR
 

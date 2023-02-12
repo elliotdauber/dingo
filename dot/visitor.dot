@@ -1,0 +1,26 @@
+digraph example {
+rankdir=LR;
+node [shape=circle];
+AddExpr [label="AddExpr
++ IVisitor accept(IVisitor*)"];
+Config [label="Config"];
+IExpr [label="IExpr"];
+IVisitor [label="IVisitor
+@+ AddExpr visit_AddExpr(AddExpr*)
+@+ NumExpr visit_NumExpr(NumExpr*)"];
+NumExpr [label="NumExpr
++ IVisitor accept(IVisitor*)"];
+PrinterVisitor [label="PrinterVisitor"];
+
+AddExpr -> IExpr[arrowhead=odot];
+AddExpr -> Config[arrowhead=normal];
+AddExpr -> IVisitor[arrowhead=normal];
+IVisitor -> AddExpr[arrowhead=normal];
+IVisitor -> NumExpr[arrowhead=normal];
+NumExpr -> IExpr[arrowhead=odot];
+NumExpr -> Config[arrowhead=normal];
+NumExpr -> IVisitor[arrowhead=normal];
+label="The System"
+style=filled
+fillcolor=yellow
+}

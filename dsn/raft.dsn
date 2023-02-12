@@ -1,0 +1,18 @@
+module FollowerState;
+module LeaderState;
+module CandidateState;
+
+module MessageQueue;
+module Config : [NetworkAddress];
+
+module Server 
+: [FollowerState, LeaderState, CandidateState, RaftMessage, Config];
+
+module Client : [RaftMessage, Config];
+
+module INetworkInterface;
+module NetworkInterface < INetworkInterface
+: [NetworkAddress, MessageQueue];
+
+module NetworkAddress;
+module RaftMessage : [NetworkAddress];

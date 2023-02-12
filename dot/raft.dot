@@ -1,0 +1,31 @@
+digraph example {
+rankdir=LR;
+node [shape=circle];
+CandidateState [label="CandidateState"];
+Client [label="Client"];
+Config [label="Config"];
+FollowerState [label="FollowerState"];
+INetworkInterface [label="INetworkInterface"];
+LeaderState [label="LeaderState"];
+MessageQueue [label="MessageQueue"];
+NetworkAddress [label="NetworkAddress"];
+NetworkInterface [label="NetworkInterface"];
+RaftMessage [label="RaftMessage"];
+Server [label="Server"];
+
+Client -> Config[arrowhead=normal];
+Client -> RaftMessage[arrowhead=normal];
+Config -> NetworkAddress[arrowhead=normal];
+NetworkInterface -> INetworkInterface[arrowhead=odot];
+NetworkInterface -> MessageQueue[arrowhead=normal];
+NetworkInterface -> NetworkAddress[arrowhead=normal];
+RaftMessage -> NetworkAddress[arrowhead=normal];
+Server -> FollowerState[arrowhead=normal];
+Server -> LeaderState[arrowhead=normal];
+Server -> CandidateState[arrowhead=normal];
+Server -> Config[arrowhead=normal];
+Server -> RaftMessage[arrowhead=normal];
+label="The System"
+style=filled
+fillcolor=yellow
+}

@@ -2,6 +2,7 @@
 #include <cctype>
 #include <fstream>
 
+#include "dir.hh"
 #include "orchestrator.hh"
 #include "visitor.hh"
 
@@ -62,14 +63,6 @@ void DSN::Orchestrator::parse_helper(std::istream& stream)
 std::ostream&
 DSN::Orchestrator::print(std::ostream& stream)
 {
-    // Visitor *v = new PrintingVisitor(stream);
-    // NodeGenVisitor* nodegen = new NodeGenVisitor(stream);
-    // program->accept(nodegen);
-
-    // EdgeGenVisitor* edgegen = new EdgeGenVisitor(stream);
-    // program->accept(edgegen);
-
-    // LoweringVisitor* lowerer = new LoweringVisitor(stream);
     ModuleCreatorVisitor* creator = new ModuleCreatorVisitor();
     program->accept(creator);
     ModuleUpdaterVisitor* updater = new ModuleUpdaterVisitor(creator->modules);
@@ -77,7 +70,30 @@ DSN::Orchestrator::print(std::ostream& stream)
     PatternApplierVisitor* applier = new PatternApplierVisitor(updater->modules);
     program->accept(applier);
 
-    for (auto outer_it = updater->modules.begin(); outer_it != updater->modules.end(); ++outer_it) {
+    stream << "digraph example {" << endl;
+    stream << "rankdir=LR;" << endl;
+    stream << "node [shape=circle];" << endl;
+
+    DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(stream);
+
+    for (auto it = applier->modules.begin(); it != applier->modules.end(); ++it) {
+        it->second->accept(node_gen);
+    }
+
+    stream << endl;
+
+    DIR::EdgeGenVisitor* edge_gen = new DIR::EdgeGenVisitor(stream);
+
+    for (auto it = applier->modules.begin(); it != applier->modules.end(); ++it) {
+        it->second->accept(edge_gen);
+    }
+
+    stream << "label=\"The System\"" << endl;
+    stream << "style=filled" << endl;
+    stream << "fillcolor=yellow" << endl;
+    stream << "}" << endl;
+
+    for (auto outer_it = applier->modules.begin(); outer_it != applier->modules.end(); ++outer_it) {
         string name = outer_it->first;
         DIR::ModuleComposite* modules = outer_it->second;
         for (DIR::Module*& module : modules->get_modules()) {
@@ -118,9 +134,6 @@ DSN::Orchestrator::print(std::ostream& stream)
                  << endl;
         }
     }
-    // delete lowerer;
-    // delete (nodegen);
-    // delete (edgegen);
 
     return stream;
 }

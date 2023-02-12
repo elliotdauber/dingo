@@ -17,8 +17,8 @@ int main(int argc, char* argv[])
         if (argc == 3) {
             ofstream outfile(argv[2]);
             orchestrator.print(outfile);
-            char* args[] = { "dot", "-Tpng", argv[2], NULL };
-            execvp("dot", args);
+            // char* args[] = { "dot", "-Tpng", argv[2], NULL };
+            // execvp("dot", args);
         } else {
             orchestrator.print(cout);
         }
