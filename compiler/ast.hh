@@ -122,40 +122,6 @@ public:
     {
         return { this };
     }
-
-    //TODO: delete!
-    string get_module_name_from_bindings(string name, map<string, AbstractModuleList*> bindings)
-    {
-        if (bindings.count(name)) {
-            AbstractModuleList* result = bindings[name];
-            if (result->type->is_array) {
-                //TODO: better error message!
-                cerr << "Error using the array type " << name << "." << endl;
-                exit(1);
-            }
-            //TODO: this is bad, rethink abstraction
-            return result->get_modules()[0]->name;
-        }
-        return name;
-    }
-
-    //TODO: replace!
-    string str(map<string, AbstractModuleList*> bindings)
-    {
-        ostringstream oss;
-        for (size_t i = 0; i < decorators->items.size(); i++) {
-            oss << decorators->items[i]->decorator;
-        }
-        oss << " " << get_module_name_from_bindings(ret_type, bindings) << " " << get_module_name_from_bindings(name, bindings) << "(";
-        for (size_t i = 0; i < args->items.size(); i++) {
-            oss << get_module_name_from_bindings(args->items[i]->type, bindings);
-            oss << args->items[i]->qualifiers;
-            if (i != args->items.size() - 1)
-                oss << ", ";
-        }
-        oss << ")";
-        return oss.str();
-    }
 };
 
 class ModuleMethodList : public ProgramNode {
@@ -169,10 +135,10 @@ public:
 
 class ForEach : public AbstractModuleMethod {
 public:
-    ForEach(string individual_name, string aggregate_name, ModuleMethodList* methods);
+    ForEach(string individual_name, ModuleList* aggregate, ModuleMethodList* methods);
     void accept(Visitor* v) override;
     string individual_name;
-    string aggregate_name;
+    ModuleList* aggregate;
     ModuleMethodList* methods;
 
     vector<ModuleMethod*> get_methods() override

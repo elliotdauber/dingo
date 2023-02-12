@@ -1,7 +1,7 @@
 #include "dir.hh"
 
 namespace DIR {
-Module::Module()
+DIRModule::DIRModule()
     : parents {}
     , patterns {}
     , dependencies {}

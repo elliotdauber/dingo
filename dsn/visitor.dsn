@@ -1,0 +1,28 @@
+define pattern Visitor {
+    acceptors : module[];
+    visitor_base : module;
+
+    spec acceptors : [visitor_base] {
+        + visitor_base accept(visitor_base*);
+    }
+
+    spec visitor_base : [acceptors] {
+        for a in [acceptors] : {
+            +@ a <visit_{a}>(a*);
+        }
+    }
+}
+
+module Config;
+
+module IExpr;
+module AddExpr < IExpr : [Config];
+module NumExpr < IExpr : [Config];
+
+module IVisitor;
+module PrinterVisitor;
+
+apply pattern Visitor {
+    acceptors: [AddExpr, NumExpr];
+    visitor_base: IVisitor;
+}

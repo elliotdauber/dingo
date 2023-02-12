@@ -59,25 +59,51 @@ private:
     ostream& stream;
 };
 
-class LoweringVisitor : public Visitor {
+class ModuleCreatorVisitor : public Visitor {
 public:
-    LoweringVisitor(ostream& stream);
+    ModuleCreatorVisitor()
+        : modules()
+    {
+    }
 
     void visit_program(Program* program) override;
     void visit_module_decl(ModuleDecl* decl) override;
-    void visit_module(Module* module) override;
-    void visit_module_list(ModuleList* class_list) override;
-    void visit_decorator(Decorator* decorator) override;
-    void visit_decorator_list(DecoratorList* decorator_list) override;
-    void visit_method_arg(MethodArg* arg) override;
-    void visit_method_arg_list(MethodArgList* arg_list) override;
-    void visit_module_method(ModuleMethod* method) override;
-    void visit_module_method_list(ModuleMethodList* method_list) override;
-    void visit_for_each(ForEach* for_each) override;
 
-private:
-    ostream& stream;
-    vector<DIR::Module> modules;
+    map<string, DIR::ModuleComposite*> modules;
+};
+
+class ModuleUpdaterVisitor : public Visitor {
+public:
+    ModuleUpdaterVisitor(map<string, DIR::ModuleComposite*> modules)
+        : modules(modules)
+        , methods()
+        , foreach_bindings()
+    {
+    }
+
+    void visit_program(Program* program) override;
+    void visit_module_decl(ModuleDecl* decl) override;
+    void visit_module_method(ModuleMethod* method) override;
+    void visit_for_each(ForEach* foreach) override;
+
+    map<string, DIR::ModuleComposite*> modules;
+    vector<DIR::Method*> methods;
+    map<string, string> foreach_bindings;
+};
+
+class PatternApplierVisitor : public Visitor {
+public:
+    PatternApplierVisitor(map<string, DIR::ModuleComposite*> modules)
+        : modules(modules)
+        , pattern_defns()
+    {
+    }
+
+    void visit_program(Program* program) override;
+    void visit_pattern_appl(PatternApplication* appl) override;
+
+    map<string, DIR::ModuleComposite*> modules;
+    map<string, PatternDefinition*> pattern_defns;
 };
 
 #endif

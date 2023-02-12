@@ -1,6 +1,7 @@
 #include "visitor.hh"
 
 #include <iostream>
+#include <regex>
 #include <set>
 
 //////////////////////////////////////////////////
@@ -90,210 +91,313 @@ void EdgeGenVisitor::visit_program(Program* program)
 //                LoweringVisitor               //
 //////////////////////////////////////////////////
 
-LoweringVisitor::LoweringVisitor(ostream& stream)
-    : stream(stream)
-    , modules()
+void ModuleCreatorVisitor::visit_program(Program* program)
 {
-}
-
-AbstractModuleList* get_modules_from_bindings(Module* module, map<string, AbstractModuleList*> bindings)
-{
-    if (bindings.count(module->name)) {
-        return bindings[module->name];
-    }
-    return module;
-}
-
-void update_module(DIR::Module* module, ModuleDecl* decl, map<string, AbstractModuleList*> bindings)
-{
-    ModuleList* parents = decl->parent_modules;
-    for (size_t i = 0; i < parents->items.size(); i++) {
-        vector<Module*> module_list = get_modules_from_bindings(parents->items[i], bindings)->get_modules();
-        for (size_t j = 0; j < module_list.size(); j++) {
-            module->parents.insert(module_list[j]->name);
-        }
-    }
-
-    ModuleList* dependencies = decl->dependencies;
-    for (size_t i = 0; i < dependencies->items.size(); i++) {
-        vector<Module*> module_list = get_modules_from_bindings(dependencies->items[i], bindings)->get_modules();
-        for (size_t j = 0; j < module_list.size(); j++) {
-            module->parents.insert(module_list[j]->name);
-        }
-    }
-
-    ModuleMethodList* methods = decl->methods;
-    for (size_t i = 0; i < methods->items.size(); i++) {
-        AbstractModuleMethod* abstract_method = methods->items[i];
-        vector<ModuleMethod*> methods = abstract_method->get_methods();
-        for (size_t j = 0; j < methods.size(); j++) {
-            module->methods.insert(methods[j]->str(bindings));
-        }
-    }
-}
-
-void LoweringVisitor::visit_program(Program* program)
-{
-    map<string, DIR::Module*> module_map {};
     for (size_t i = 0; i < program->module_decls.size(); i++) {
-        DIR::Module* module = new DIR::Module();
-        ModuleDecl* decl = program->module_decls[i];
-        string name = decl->module->name;
-        if (module_map.count(name)) {
-            cerr << "Duplicated module name: " << name << endl;
+        visit_module_decl(program->module_decls[i]);
+    }
+}
+
+void ModuleCreatorVisitor::visit_module_decl(ModuleDecl* decl)
+{
+    DIR::Module* module = new DIR::Module();
+    string name = decl->module->name;
+    if (modules.count(name)) {
+        cerr << "Duplicated module name: " << name << endl;
+        exit(1);
+    }
+    module->name = name;
+    modules[name] = module;
+}
+
+void ModuleUpdaterVisitor::visit_program(Program* program)
+{
+    for (size_t i = 0; i < program->module_decls.size(); i++) {
+        program->module_decls[i]->accept(this);
+    }
+}
+
+void ModuleUpdaterVisitor::visit_module_decl(ModuleDecl* decl)
+{
+    vector<DIR::Module*> module_list = modules[decl->module->name]->get_modules();
+    for (DIR::Module*& module : module_list) {
+        ModuleList* parents = decl->parent_modules;
+        for (size_t i = 0; i < parents->items.size(); i++) {
+            string parent_name = parents->items[i]->name;
+            if (!modules.count(parent_name)) {
+                cerr << "Parent " << parent_name << " of module " << module->name << " is not declared." << endl;
+                exit(1);
+            }
+            vector<DIR::Module*> parent_modules = modules[parent_name]->get_modules();
+            for (size_t j = 0; j < parent_modules.size(); j++) {
+                module->parents.insert(parent_modules[j]);
+            }
+        }
+
+        ModuleList* dependencies = decl->dependencies;
+        for (size_t i = 0; i < dependencies->items.size(); i++) {
+            string dep_name = dependencies->items[i]->name;
+            if (!modules.count(dep_name)) {
+                cerr << "Dependency " << dep_name << " of module " << module->name << " is not declared." << endl;
+                exit(1);
+            }
+            vector<DIR::Module*> dependency_modules = modules[dep_name]->get_modules();
+            for (size_t j = 0; j < dependency_modules.size(); j++) {
+                module->dependencies.insert(dependency_modules[j]);
+            }
+        }
+
+        ModuleMethodList* mod_methods = decl->methods;
+        for (size_t i = 0; i < mod_methods->items.size(); i++) {
+            AbstractModuleMethod* abstract_method = mod_methods->items[i];
+            methods.clear();
+            foreach_bindings.clear();
+            abstract_method->accept(this);
+            for (size_t i = 0; i < methods.size(); i++) {
+                //TODO: check method types to make sure none have the same type and
+                //name
+                // methods[i]->print();
+                // cout << endl;
+                module->methods.push_back(methods[i]);
+            }
+        }
+    }
+}
+
+void ModuleUpdaterVisitor::visit_module_method(ModuleMethod* method)
+{
+    string name = method->name;
+    name = regex_replace(name, regex("[<>]"), "");
+
+    // cout << name << endl;
+
+    for (auto it = foreach_bindings.begin(); it != foreach_bindings.end(); ++it) {
+        ostringstream oss;
+        oss << "\\{" << it->first << "\\}";
+        // cout << oss.str() << endl;
+        regex r(oss.str());
+        name = regex_replace(name, r, it->second);
+    }
+
+    //TODO: allow int, string, void, etc
+    string ret_type = method->ret_type;
+    if (foreach_bindings.count(ret_type)) {
+        ret_type = foreach_bindings[ret_type];
+    } else if (!modules.count(ret_type)) {
+        cerr << "Return type " << ret_type << " in method " << name << " is unknown." << endl;
+        exit(1);
+    } else {
+        DIR::ModuleComposite* composite = modules[ret_type];
+        if (composite->kind() == DIR::ModuleComposite::Kind::List) {
+            cerr << "Attempting to assign module[] type " << ret_type << " to an return val, which should be a module type." << endl;
+            exit(1);
+        } else {
+            vector<DIR::Module*> m = composite->get_modules();
+            if (m.size() == 0) {
+                cerr << "module " << ret_type << " is empty. Something went very wrong." << endl;
+                exit(1);
+            } else {
+                ret_type = m[0]->name;
+            }
+        }
+    }
+
+    vector<DIR::Type*> args {};
+    for (size_t i = 0; i < method->args->items.size(); i++) {
+        //TODO: allow int, string, void, etc
+        string arg_type = method->args->items[i]->type;
+        if (foreach_bindings.count(arg_type)) {
+            arg_type = foreach_bindings[arg_type];
+        } else if (!modules.count(arg_type)) {
+            cerr << "Arg type " << arg_type << " in method " << name << " is unknown." << endl;
+            exit(1);
+        } else {
+            DIR::ModuleComposite* composite = modules[arg_type];
+            if (composite->kind() == DIR::ModuleComposite::Kind::List) {
+                cerr << "Attempting to assign module[] type " << arg_type << " to an arg, which should be a module type." << endl;
+                exit(1);
+            } else {
+                vector<DIR::Module*> m = composite->get_modules();
+                if (m.size() == 0) {
+                    cerr << "module " << arg_type << " is empty. Something went very wrong." << endl;
+                    exit(1);
+                } else {
+                    arg_type = m[0]->name;
+                }
+            }
+        }
+        args.push_back(new DIR::Type(arg_type, method->args->items[i]->qualifiers));
+    }
+
+    ostringstream decorators;
+    for (size_t i = 0; i < method->decorators->items.size(); i++) {
+        decorators << method->decorators->items[i]->decorator;
+    }
+
+    methods.push_back(new DIR::Method(
+        decorators.str(),
+        new DIR::Type(ret_type, ""), //TODO: allow qualifiers on return type
+        name,
+        args));
+}
+
+void ModuleUpdaterVisitor::visit_for_each(ForEach* foreach)
+{
+    //TODO: flatten list first to remove code duplication
+    vector<Module*> foreach_modules = foreach->aggregate->get_modules();
+    for (size_t i = 0; i < foreach_modules.size(); i++) {
+        string foreach_module_name = foreach_modules[i]->name;
+        if (modules.count(foreach_module_name)) {
+            vector<DIR::Module*> module_list = modules[foreach_module_name]->get_modules();
+            for (size_t j = 0; j < module_list.size(); j++) {
+                string module_name = module_list[j]->name;
+
+                foreach_bindings[foreach->individual_name] = module_name;
+
+                vector<AbstractModuleMethod*> foreach_methods = foreach->methods->items;
+                for (size_t k = 0; k < foreach_methods.size(); k++) {
+                    foreach_methods[k]->accept(this);
+                }
+
+                foreach_bindings.erase(foreach->individual_name);
+            }
+        } else {
+            foreach_bindings[foreach->individual_name] = foreach_modules[i]->name;
+
+            vector<AbstractModuleMethod*> foreach_methods = foreach->methods->items;
+            for (size_t j = 0; j < foreach_methods.size(); j++) {
+                foreach_methods[j]->accept(this);
+            }
+
+            foreach_bindings.erase(foreach->individual_name);
+        }
+    }
+}
+
+void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
+{
+    string name = pattern_appl->name;
+    if (!pattern_defns.count(name)) {
+        cerr << "Attempting to apply an undeclared pattern: " << name << endl;
+        exit(1);
+    }
+
+    PatternDefinition* pattern_defn = pattern_defns[name];
+
+    size_t defn_num_members = pattern_defn->members->items.size();
+    size_t appl_num_members = pattern_appl->member_assignments->items.size();
+    if (appl_num_members != defn_num_members) {
+        cerr << "Attemping to apply pattern, but got the incorrect number of member assignments: Pattern " << name << " contains " << defn_num_members << " members, but application tried to assign " << appl_num_members << " members. " << endl;
+        exit(1);
+    }
+
+    for (size_t j = 0; j < appl_num_members; j++) {
+        MemberAssignment* assignment = pattern_appl->member_assignments->items[j];
+        string member_name = assignment->member_name;
+        Member* defn_member = pattern_defn->members->find(member_name);
+
+        if (defn_member == nullptr) {
+            cerr << "Tried to assign to the member " << member_name << " in an application of the pattern " << name << ", but this member does not exist on the pattern." << endl;
             exit(1);
         }
-        module->name = name;
-        module_map[name] = module;
-        update_module(module, decl, {});
+
+        Type* defn_member_type = defn_member->type;
+        Type* member_assignment_type = assignment->assignment->type;
+        if (!(*defn_member_type == *member_assignment_type)) {
+            cerr << "Type error: The type of field " << member_name << " in the application of the pattern " << name << " is wrong. The type should be " << defn_member_type->str() << ", but is " << member_assignment_type->str() << "." << endl;
+            exit(1);
+        }
+
+        DIR::ModuleList* module_list = new DIR::ModuleList();
+        vector<Module*> assignment_modules = assignment->assignment->get_modules();
+
+        for (size_t k = 0; k < assignment_modules.size(); k++) {
+            if (!modules.count(assignment_modules[k]->name)) {
+                cerr << "Tried to apply pattern with module " << assignment_modules[k]->name << " for pattern " << pattern_appl->name << ", field " << member_name << ", but this module does not exist." << endl;
+                exit(1);
+            }
+            DIR::ModuleComposite* composite = modules[assignment_modules[k]->name];
+            module_list->add(composite);
+        }
+
+        //TODO: make sure we aren't overwriting something??
+        modules[defn_member->name] = module_list;
     }
 
-    //TODO: check for circular inheritance hierarchies
+    SpecList* specs = pattern_defn->specs;
 
-    map<string, PatternDefinition*> patterns {};
+    if (specs->items.size() > appl_num_members) {
+        cerr << "Too many specs defined for pattern " << name << ". Expected at most " << appl_num_members << ", but received " << specs->items.size() << "." << endl;
+    }
+
+    ModuleUpdaterVisitor* module_updater = new ModuleUpdaterVisitor(modules);
+
+    for (size_t j = 0; j < specs->items.size(); j++) {
+        Spec* spec = specs->items[j];
+        string spec_name = spec->module_decl->module->name;
+
+        //TODO: use modules here? or something more specific?
+        if (!modules.count(spec_name)) {
+            cerr << "In pattern " << name << ", defined a spec for " << spec_name << ", but this is not a defined member." << endl;
+            exit(1);
+        }
+        spec->module_decl->accept(module_updater);
+    }
+
+    modules = module_updater->modules;
+
+    //remove bindings
+    for (size_t j = 0; j < appl_num_members; j++) {
+        MemberAssignment* assignment = pattern_appl->member_assignments->items[j];
+        string member_name = assignment->member_name;
+        Member* defn_member = pattern_defn->members->find(member_name);
+        modules.erase(defn_member->name);
+    }
+}
+
+void PatternApplierVisitor::visit_program(Program* program)
+{
     for (size_t i = 0; i < program->pattern_defns.size(); i++) {
         string name = program->pattern_defns[i]->name;
-        if (patterns.count(name)) {
+        if (pattern_defns.count(name)) {
             cerr << "Duplicated pattern name: " << name << endl;
             exit(1);
         }
-        patterns[name] = program->pattern_defns[i];
+        pattern_defns[name] = program->pattern_defns[i];
     }
 
     for (size_t i = 0; i < program->pattern_appls.size(); i++) {
-        PatternApplication* pattern_appl = program->pattern_appls[i];
-        string name = pattern_appl->name;
-        if (!patterns.count(name)) {
-            cerr << "Attempting to apply an undeclared pattern: " << name << endl;
-            exit(1);
-        }
-        PatternDefinition* pattern_defn = patterns[name];
-
-        size_t defn_num_members = pattern_defn->members->items.size();
-        size_t appl_num_members = pattern_appl->member_assignments->items.size();
-        if (appl_num_members != defn_num_members) {
-            cerr << "Attemping to apply pattern, but got the incorrect number of member assignments: Pattern " << name << " contains " << defn_num_members << " members, but application tried to assign " << appl_num_members << " members. " << endl;
-            exit(1);
-        }
-
-        map<string, AbstractModuleList*> member_bindings;
-        for (size_t j = 0; j < appl_num_members; j++) {
-            MemberAssignment* assignment = pattern_appl->member_assignments->items[j];
-            string member_name = assignment->member_name;
-            Member* defn_member = pattern_defn->members->find(member_name);
-
-            if (defn_member == nullptr) {
-                cerr << "Tried to assign to the member " << member_name << " in an application of the pattern " << name << ", but this member does not exist on the pattern." << endl;
-                exit(1);
-            }
-
-            Type* defn_member_type = defn_member->type;
-            Type* member_assignment_type = assignment->assignment->type;
-            if (!(*defn_member_type == *member_assignment_type)) {
-                cerr << "Type error: The type of field " << member_name << " in the application of the pattern " << name << " is wrong. The type should be " << defn_member_type->str() << ", but is " << member_assignment_type->str() << "." << endl;
-                exit(1);
-            }
-
-            member_bindings[defn_member->name] = assignment->assignment;
-        }
-
-        SpecList* specs = pattern_defn->specs;
-
-        if (specs->items.size() > member_bindings.size()) {
-            cerr << "Too many specs defined for pattern " << name << ". Expected at most " << member_bindings.size() << ", but received " << specs->items.size() << "." << endl;
-        }
-
-        for (size_t j = 0; j < specs->items.size(); j++) {
-            Spec* spec = specs->items[j];
-            string spec_name = spec->module_decl->module->name;
-            ModuleList* spec_dependencies = spec->module_decl->dependencies;
-            if (!member_bindings.count(spec_name)) {
-                cerr << "In pattern " << name << ", defined a spec for " << spec_name << ", but this is not a defined member." << endl;
-                exit(1);
-            }
-            vector<Module*> module_list = member_bindings[spec_name]->get_modules();
-
-            ostringstream pattern_instance_name;
-            pattern_instance_name << name << i;
-
-            //TODO: use bindings here to change spec names
-            for (size_t k = 0; k < module_list.size(); k++) {
-                map<string, AbstractModuleList*> spec_member_bindings = member_bindings;
-                spec_member_bindings[spec_name] = module_list[k];
-                string module_name = module_list[k]->name;
-                //TODO: is this guaranteed to exist?
-                DIR::Module* cur_module = module_map[module_name];
-                update_module(cur_module, spec->module_decl, spec_member_bindings);
-                cur_module->patterns.insert(pattern_instance_name.str());
-            }
-        }
-    }
-    for (auto outer_it = module_map.begin(); outer_it != module_map.end(); ++outer_it) {
-        string name = outer_it->first;
-        DIR::Module* module = outer_it->second;
-        cout << name;
-        if (module->parents.size() > 0) {
-            cout << " < ";
-            int idx = 0;
-            for (auto it = module->parents.begin(); it != module->parents.end(); ++it) {
-                cout << *it;
-                if (idx++ != module->parents.size() - 1)
-                    cout << ", ";
-            }
-        }
-        cout << " : [";
-
-        int idx = 0;
-        for (auto it = module->dependencies.begin(); it != module->dependencies.end(); ++it) {
-            cout << *it;
-            if (idx++ != module->dependencies.size() - 1)
-                cout << ", ";
-        }
-        cout << "] {" << endl;
-        for (auto it = module->methods.begin(); it != module->methods.end(); ++it) {
-            cout << "    " << *it << ";" << endl;
-        }
-        cout << "}" << endl;
-        if (module->patterns.size() > 0) {
-            cout << "patterns: ";
-            idx = 0;
-            for (auto it = module->patterns.begin(); it != module->patterns.end(); ++it) {
-                cout << *it;
-                if (idx++ != module->patterns.size() - 1)
-                    cout << ", ";
-            }
-        }
-        cout << endl
-             << endl;
+        program->pattern_appls[i]->accept(this);
     }
 }
-void LoweringVisitor::visit_module_decl(ModuleDecl* decl)
-{
-}
-void LoweringVisitor::visit_module(Module* module)
-{
-}
-void LoweringVisitor::visit_module_list(ModuleList* class_list)
-{
-}
-void LoweringVisitor::visit_decorator(Decorator* decorator)
-{
-}
-void LoweringVisitor::visit_decorator_list(DecoratorList* decorator_list)
-{
-}
-void LoweringVisitor::visit_method_arg(MethodArg* arg)
-{
-}
-void LoweringVisitor::visit_method_arg_list(MethodArgList* arg_list)
-{
-}
-void LoweringVisitor::visit_module_method(ModuleMethod* method)
-{
-}
-void LoweringVisitor::visit_module_method_list(ModuleMethodList* method_list)
-{
-}
-void LoweringVisitor::visit_for_each(ForEach* for_each)
-{
-}
+
+// void DIRLoweringVisitor::
+
+// void DIRLoweringVisitor::visit_module(Module* module)
+// {
+
+// }
+// void DIRLoweringVisitor::visit_module_list(ModuleList* class_list)
+// {
+// }
+// void DIRLoweringVisitor::visit_decorator(Decorator* decorator)
+// {
+// }
+// void DIRLoweringVisitor::visit_decorator_list(DecoratorList* decorator_list)
+// {
+// }
+// void DIRLoweringVisitor::visit_method_arg(MethodArg* arg)
+// {
+// }
+// void DIRLoweringVisitor::visit_method_arg_list(MethodArgList* arg_list)
+// {
+// }
+// void DIRLoweringVisitor::visit_module_method(ModuleMethod* method)
+// {
+// }
+// void DIRLoweringVisitor::visit_module_method_list(ModuleMethodList* method_list)
+// {
+// }
+// void DIRLoweringVisitor::visit_for_each(ForEach* for_each)
+// {
+// }

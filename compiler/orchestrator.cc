@@ -69,9 +69,56 @@ DSN::Orchestrator::print(std::ostream& stream)
     // EdgeGenVisitor* edgegen = new EdgeGenVisitor(stream);
     // program->accept(edgegen);
 
-    LoweringVisitor* lowerer = new LoweringVisitor(stream);
-    program->accept(lowerer);
-    delete lowerer;
+    // LoweringVisitor* lowerer = new LoweringVisitor(stream);
+    ModuleCreatorVisitor* creator = new ModuleCreatorVisitor();
+    program->accept(creator);
+    ModuleUpdaterVisitor* updater = new ModuleUpdaterVisitor(creator->modules);
+    program->accept(updater);
+    PatternApplierVisitor* applier = new PatternApplierVisitor(updater->modules);
+    program->accept(applier);
+
+    for (auto outer_it = updater->modules.begin(); outer_it != updater->modules.end(); ++outer_it) {
+        string name = outer_it->first;
+        DIR::ModuleComposite* modules = outer_it->second;
+        for (DIR::Module*& module : modules->get_modules()) {
+            cout << name;
+            if (module->parents.size() > 0) {
+                cout << " < ";
+                int idx = 0;
+                for (auto it = module->parents.begin(); it != module->parents.end(); ++it) {
+                    cout << (*it)->name;
+                    if (idx++ != module->parents.size() - 1)
+                        cout << ", ";
+                }
+            }
+            cout << " : [";
+
+            int idx = 0;
+            for (auto it = module->dependencies.begin(); it != module->dependencies.end(); ++it) {
+                cout << (*it)->name;
+                if (idx++ != module->dependencies.size() - 1)
+                    cout << ", ";
+            }
+            cout << "] {" << endl;
+            for (auto it = module->methods.begin(); it != module->methods.end(); ++it) {
+                (*it)->print();
+                cout << ";" << endl;
+            }
+            cout << "}" << endl;
+            // if (module->patterns.size() > 0) {
+            //     cout << "patterns: ";
+            //     idx = 0;
+            //     for (auto it = module->patterns.begin(); it != module->patterns.end(); ++it) {
+            //         cout << *it;
+            //         if (idx++ != module->patterns.size() - 1)
+            //             cout << ", ";
+            //     }
+            // }
+            cout << endl
+                 << endl;
+        }
+    }
+    // delete lowerer;
     // delete (nodegen);
     // delete (edgegen);
 

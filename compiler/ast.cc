@@ -158,9 +158,9 @@ void ModuleDecl::accept(Visitor* v)
     v->visit_module_decl(this);
 }
 
-ForEach::ForEach(string individual_name, string aggregate_name, ModuleMethodList* methods)
+ForEach::ForEach(string individual_name, ModuleList* aggregate, ModuleMethodList* methods)
     : individual_name(individual_name)
-    , aggregate_name(aggregate_name)
+    , aggregate(aggregate)
     , methods(methods)
 {
 }

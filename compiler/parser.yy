@@ -210,7 +210,7 @@ method_args : %empty {$$ = new MethodArgList();}
 method_arg : ID QUALIFIERS {$$ = new MethodArg($1, $2);} 
            | ID {$$ = new MethodArg($1, "");};
 
-for_each : FOR ID IN ID COLON LBRACKET module_items RBRACKET {$$ = new ForEach($2, $4, $7);};
+for_each : FOR ID IN module_list COLON LBRACKET module_items RBRACKET {$$ = new ForEach($2, $4, $7);};
 
 %%
 
