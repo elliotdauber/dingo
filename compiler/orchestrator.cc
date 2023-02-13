@@ -72,7 +72,7 @@ DSN::Orchestrator::print(std::ostream& stream)
 
     stream << "digraph example {" << endl;
     stream << "rankdir=LR;" << endl;
-    stream << "node [shape=circle];" << endl;
+    stream << "node [shape=square];" << endl;
 
     DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(stream);
 

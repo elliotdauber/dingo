@@ -1,36 +1,36 @@
 digraph example {
 rankdir=LR;
-node [shape=circle];
-AddExpr [label="AddExpr
+node [shape=square];
+AddExpr [label="<b>AddExpr<\b>
 + IVisitor accept(IVisitor*)"];
-BadState [label="BadState
+BadState [label="<b>BadState<\b>
 + StateMachine hi()"];
-Circle [label="Circle"];
-CircleFactory [label="CircleFactory
+Circle [label="<b>Circle<\b>"];
+CircleFactory [label="<b>CircleFactory<\b>
 + Shape create()"];
-Config [label="Config
+Config [label="<b>Config<\b>
 $+ Config GetInstance()
 - Config singleton(Config&)
 - Config singleton()"];
-GoodState [label="GoodState
+GoodState [label="<b>GoodState<\b>
 + StateMachine hi()"];
-IExpr [label="IExpr
+IExpr [label="<b>IExpr<\b>
 + IVisitor accept(IVisitor*)"];
-IState [label="IState
+IState [label="<b>IState<\b>
 @+ StateMachine hi()"];
-IVisitor [label="IVisitor
+IVisitor [label="<b>IVisitor<\b>
 + IExpr visit_IExpr(IExpr*)
 + AddExpr visit_AddExpr(AddExpr*)
 + NumExpr visit_NumExpr(NumExpr*)"];
-NumExpr [label="NumExpr
+NumExpr [label="<b>NumExpr<\b>
 + IVisitor accept(IVisitor*)"];
-Shape [label="Shape"];
-ShapeFactory [label="ShapeFactory
+Shape [label="<b>Shape<\b>"];
+ShapeFactory [label="<b>ShapeFactory<\b>
 @+ Shape create()"];
-Square [label="Square"];
-SquareFactory [label="SquareFactory
+Square [label="<b>Square<\b>"];
+SquareFactory [label="<b>SquareFactory<\b>
 + Shape create()"];
-StateMachine [label="StateMachine
+StateMachine [label="<b>StateMachine<\b>
 $+ StateMachine GetInstance()
 - StateMachine singleton(StateMachine&)
 - StateMachine singleton()
