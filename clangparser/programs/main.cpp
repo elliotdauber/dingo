@@ -1,4 +1,17 @@
+class Config {
+};
+
+class Server {
+    void run();
+};
+
+void Server::run()
+{
+    Config config = Config();
+}
+
 class IExpr {
+    Server serve();
 };
 
 class Expr : IExpr {

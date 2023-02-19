@@ -1,0 +1,14 @@
+digraph example {
+rankdir=LR;
+node [shape=square];
+Config [label="Config"];
+Expr [label="Expr"];
+IExpr [label="IExpr"];
+Server [label="Server"];
+
+Expr -> IExpr[arrowhead=odot];
+Server -> Config[arrowhead=normal];
+label="The System"
+style=filled
+fillcolor=yellow
+}
