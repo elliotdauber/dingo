@@ -1,0 +1,17 @@
+digraph example {
+rankdir=LR;
+node [shape=square];
+Game [label="Game"];
+Notified [label="Notified"];
+Notifier [label="Notifier"];
+SpriteStore [label="SpriteStore"];
+
+Game -> Notified[arrowhead=odot];
+Game -> Notifier[arrowhead=normal];
+Notifier -> Notified[arrowhead=normal];
+SpriteStore -> Notified[arrowhead=odot];
+SpriteStore -> Notifier[arrowhead=normal];
+label="The System"
+style=filled
+fillcolor=yellow
+}

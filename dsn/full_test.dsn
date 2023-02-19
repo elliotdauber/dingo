@@ -13,12 +13,12 @@ define pattern Visitor {
     visitor_base: module;
 
     spec acceptors : [visitor_base] {
-        + visitor_base accept(visitor_base*);
+        + void accept(visitor_base*);
     }
 
     spec visitor_base : [acceptors] {
         for a in [acceptors] : {
-            + a <visit_{a}>(a*);
+            + void visit_{a}(a*);
         }
     }
 }
@@ -87,8 +87,17 @@ apply pattern State {
 }
 
 module IVisitor;
-module IExpr;
-module AddExpr;
+module IExpr : [Config];
+
+
+module AddExpr : [Config, IExpr] {
+    + IExpr get_lhs();
+    + IExpr get_rhs();
+    - void private_fn(Config*);
+};
+
+
+
 module NumExpr;
 
 apply pattern Visitor {

@@ -91,6 +91,11 @@ public:
         , methods()
     {
     }
+    Module(string name)
+        : Module()
+    {
+        this->name = name;
+    }
     string name;
     set<Module*> parents;
     set<Module*> dependencies;

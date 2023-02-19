@@ -1,0 +1,1023 @@
+Grammar
+
+    0 $accept: program_option "end of file"
+
+    1 program_option: "end of file"
+    2               | program "end of file"
+
+    3 program: declaration
+    4        | program declaration
+
+    5 declaration: pattern_definition
+    6            | pattern_application
+    7            | module_decl
+
+    8 pattern_definition: DEFINE PATTERN ID LBRACKET pattern_member_decls pattern_spec_decls RBRACKET
+
+    9 pattern_member_decls: %empty
+   10                     | pattern_member_decl pattern_member_decls
+
+   11 pattern_member_decl: ID COLON type SEMICOLON
+
+   12 pattern_spec_decls: %empty
+   13                   | pattern_spec_decl pattern_spec_decls
+
+   14 pattern_spec_decl: SPEC module_decl_no_keyword
+
+   15 type: single_type
+   16     | single_type LSQUARE RSQUARE
+
+   17 single_type: MODULE
+
+   18 pattern_application: APPLY PATTERN ID LBRACKET pattern_member_assignments RBRACKET
+
+   19 pattern_member_assignments: %empty
+   20                           | pattern_member_assignment pattern_member_assignments
+
+   21 pattern_member_assignment: ID COLON ID SEMICOLON
+   22                          | ID COLON module_list SEMICOLON
+
+   23 module_list: LSQUARE modules RSQUARE
+   24            | LSQUARE RSQUARE
+
+   25 modules: ID
+   26        | modules COMMA ID
+
+   27 module_decl_no_keyword: module_header SEMICOLON
+   28                       | module_header COLON LBRACKET module_items RBRACKET
+   29                       | module_header COLON module_list SEMICOLON
+   30                       | module_header COLON module_list LBRACKET module_items RBRACKET
+
+   31 module_decl: MODULE module_decl_no_keyword
+
+   32 module_header: ID LESSTHAN modules
+   33              | ID
+
+   34 module_item: module_method
+   35            | for_each
+
+   36 module_items: %empty
+   37             | module_item module_items
+
+   38 module_method: decorators ID method_name LPAREN method_args RPAREN SEMICOLON
+
+   39 method_name: ID
+   40            | STENCILED_ID
+
+   41 decorators: %empty
+   42           | DECORATOR decorators
+
+   43 method_args: %empty
+   44            | method_arg
+   45            | method_arg COMMA method_args
+
+   46 method_arg: ID QUALIFIERS
+   47           | ID
+
+   48 for_each: FOR ID IN module_list COLON LBRACKET module_items RBRACKET
+
+
+Terminals, with rules where they appear
+
+    "end of file" (0) 0 1 2
+    error (256)
+    ID <std::string> (258) 8 11 18 21 22 25 26 32 33 38 39 46 47 48
+    STENCILED_ID <std::string> (259) 40
+    DECORATOR <std::string> (260) 42
+    QUALIFIERS <std::string> (261) 46
+    LBRACKET (262) 8 18 28 30 48
+    RBRACKET (263) 8 18 28 30 48
+    LSQUARE (264) 16 23 24
+    RSQUARE (265) 16 23 24
+    LPAREN (266) 38
+    RPAREN (267) 38
+    SEMICOLON (268) 11 21 22 27 29 38
+    DEFINE (269) 8
+    APPLY (270) 18
+    PATTERN (271) 8 18
+    MODULE (272) 17 31
+    FOR (273) 48
+    IN (274) 48
+    SPEC (275) 14
+    LESSTHAN (276) 32
+    COLON (277) 11 21 22 28 29 30 48
+    COMMA (278) 26 45
+
+
+Nonterminals, with rules where they appear
+
+    $accept (24)
+        on left: 0
+    program_option (25)
+        on left: 1 2
+        on right: 0
+    program (26)
+        on left: 3 4
+        on right: 2 4
+    declaration (27)
+        on left: 5 6 7
+        on right: 3 4
+    pattern_definition <PatternDefinition*> (28)
+        on left: 8
+        on right: 5
+    pattern_member_decls <MemberList*> (29)
+        on left: 9 10
+        on right: 8 10
+    pattern_member_decl <Member*> (30)
+        on left: 11
+        on right: 10
+    pattern_spec_decls <SpecList*> (31)
+        on left: 12 13
+        on right: 8 13
+    pattern_spec_decl <Spec*> (32)
+        on left: 14
+        on right: 13
+    type <Type*> (33)
+        on left: 15 16
+        on right: 11
+    single_type <std::string> (34)
+        on left: 17
+        on right: 15 16
+    pattern_application <PatternApplication*> (35)
+        on left: 18
+        on right: 6
+    pattern_member_assignments <MemberAssignmentList*> (36)
+        on left: 19 20
+        on right: 18 20
+    pattern_member_assignment <MemberAssignment*> (37)
+        on left: 21 22
+        on right: 20
+    module_list <ModuleList*> (38)
+        on left: 23 24
+        on right: 22 29 30 48
+    modules <ModuleList*> (39)
+        on left: 25 26
+        on right: 23 26 32
+    module_decl_no_keyword <ModuleDecl*> (40)
+        on left: 27 28 29 30
+        on right: 14 31
+    module_decl <ModuleDecl*> (41)
+        on left: 31
+        on right: 7
+    module_header <std::pair<Module*, ModuleList*>> (42)
+        on left: 32 33
+        on right: 27 28 29 30
+    module_item <AbstractModuleMethod*> (43)
+        on left: 34 35
+        on right: 37
+    module_items <ModuleMethodList*> (44)
+        on left: 36 37
+        on right: 28 30 37 48
+    module_method <ModuleMethod*> (45)
+        on left: 38
+        on right: 34
+    method_name <std::string> (46)
+        on left: 39 40
+        on right: 38
+    decorators <DecoratorList*> (47)
+        on left: 41 42
+        on right: 38 42
+    method_args <MethodArgList*> (48)
+        on left: 43 44 45
+        on right: 38 45
+    method_arg <MethodArg*> (49)
+        on left: 46 47
+        on right: 44 45
+    for_each <ForEach*> (50)
+        on left: 48
+        on right: 35
+
+
+State 0
+
+    0 $accept: • program_option "end of file"
+
+    "end of file"  shift, and go to state 1
+    DEFINE         shift, and go to state 2
+    APPLY          shift, and go to state 3
+    MODULE         shift, and go to state 4
+
+    program_option       go to state 5
+    program              go to state 6
+    declaration          go to state 7
+    pattern_definition   go to state 8
+    pattern_application  go to state 9
+    module_decl          go to state 10
+
+
+State 1
+
+    1 program_option: "end of file" •
+
+    $default  reduce using rule 1 (program_option)
+
+
+State 2
+
+    8 pattern_definition: DEFINE • PATTERN ID LBRACKET pattern_member_decls pattern_spec_decls RBRACKET
+
+    PATTERN  shift, and go to state 11
+
+
+State 3
+
+   18 pattern_application: APPLY • PATTERN ID LBRACKET pattern_member_assignments RBRACKET
+
+    PATTERN  shift, and go to state 12
+
+
+State 4
+
+   31 module_decl: MODULE • module_decl_no_keyword
+
+    ID  shift, and go to state 13
+
+    module_decl_no_keyword  go to state 14
+    module_header           go to state 15
+
+
+State 5
+
+    0 $accept: program_option • "end of file"
+
+    "end of file"  shift, and go to state 16
+
+
+State 6
+
+    2 program_option: program • "end of file"
+    4 program: program • declaration
+
+    "end of file"  shift, and go to state 17
+    DEFINE         shift, and go to state 2
+    APPLY          shift, and go to state 3
+    MODULE         shift, and go to state 4
+
+    declaration          go to state 18
+    pattern_definition   go to state 8
+    pattern_application  go to state 9
+    module_decl          go to state 10
+
+
+State 7
+
+    3 program: declaration •
+
+    $default  reduce using rule 3 (program)
+
+
+State 8
+
+    5 declaration: pattern_definition •
+
+    $default  reduce using rule 5 (declaration)
+
+
+State 9
+
+    6 declaration: pattern_application •
+
+    $default  reduce using rule 6 (declaration)
+
+
+State 10
+
+    7 declaration: module_decl •
+
+    $default  reduce using rule 7 (declaration)
+
+
+State 11
+
+    8 pattern_definition: DEFINE PATTERN • ID LBRACKET pattern_member_decls pattern_spec_decls RBRACKET
+
+    ID  shift, and go to state 19
+
+
+State 12
+
+   18 pattern_application: APPLY PATTERN • ID LBRACKET pattern_member_assignments RBRACKET
+
+    ID  shift, and go to state 20
+
+
+State 13
+
+   32 module_header: ID • LESSTHAN modules
+   33              | ID •
+
+    LESSTHAN  shift, and go to state 21
+
+    $default  reduce using rule 33 (module_header)
+
+
+State 14
+
+   31 module_decl: MODULE module_decl_no_keyword •
+
+    $default  reduce using rule 31 (module_decl)
+
+
+State 15
+
+   27 module_decl_no_keyword: module_header • SEMICOLON
+   28                       | module_header • COLON LBRACKET module_items RBRACKET
+   29                       | module_header • COLON module_list SEMICOLON
+   30                       | module_header • COLON module_list LBRACKET module_items RBRACKET
+
+    SEMICOLON  shift, and go to state 22
+    COLON      shift, and go to state 23
+
+
+State 16
+
+    0 $accept: program_option "end of file" •
+
+    $default  accept
+
+
+State 17
+
+    2 program_option: program "end of file" •
+
+    $default  reduce using rule 2 (program_option)
+
+
+State 18
+
+    4 program: program declaration •
+
+    $default  reduce using rule 4 (program)
+
+
+State 19
+
+    8 pattern_definition: DEFINE PATTERN ID • LBRACKET pattern_member_decls pattern_spec_decls RBRACKET
+
+    LBRACKET  shift, and go to state 24
+
+
+State 20
+
+   18 pattern_application: APPLY PATTERN ID • LBRACKET pattern_member_assignments RBRACKET
+
+    LBRACKET  shift, and go to state 25
+
+
+State 21
+
+   32 module_header: ID LESSTHAN • modules
+
+    ID  shift, and go to state 26
+
+    modules  go to state 27
+
+
+State 22
+
+   27 module_decl_no_keyword: module_header SEMICOLON •
+
+    $default  reduce using rule 27 (module_decl_no_keyword)
+
+
+State 23
+
+   28 module_decl_no_keyword: module_header COLON • LBRACKET module_items RBRACKET
+   29                       | module_header COLON • module_list SEMICOLON
+   30                       | module_header COLON • module_list LBRACKET module_items RBRACKET
+
+    LBRACKET  shift, and go to state 28
+    LSQUARE   shift, and go to state 29
+
+    module_list  go to state 30
+
+
+State 24
+
+    8 pattern_definition: DEFINE PATTERN ID LBRACKET • pattern_member_decls pattern_spec_decls RBRACKET
+
+    ID  shift, and go to state 31
+
+    $default  reduce using rule 9 (pattern_member_decls)
+
+    pattern_member_decls  go to state 32
+    pattern_member_decl   go to state 33
+
+
+State 25
+
+   18 pattern_application: APPLY PATTERN ID LBRACKET • pattern_member_assignments RBRACKET
+
+    ID  shift, and go to state 34
+
+    $default  reduce using rule 19 (pattern_member_assignments)
+
+    pattern_member_assignments  go to state 35
+    pattern_member_assignment   go to state 36
+
+
+State 26
+
+   25 modules: ID •
+
+    $default  reduce using rule 25 (modules)
+
+
+State 27
+
+   26 modules: modules • COMMA ID
+   32 module_header: ID LESSTHAN modules •
+
+    COMMA  shift, and go to state 37
+
+    $default  reduce using rule 32 (module_header)
+
+
+State 28
+
+   28 module_decl_no_keyword: module_header COLON LBRACKET • module_items RBRACKET
+
+    DECORATOR  shift, and go to state 38
+    FOR        shift, and go to state 39
+
+    ID        reduce using rule 41 (decorators)
+    $default  reduce using rule 36 (module_items)
+
+    module_item    go to state 40
+    module_items   go to state 41
+    module_method  go to state 42
+    decorators     go to state 43
+    for_each       go to state 44
+
+
+State 29
+
+   23 module_list: LSQUARE • modules RSQUARE
+   24            | LSQUARE • RSQUARE
+
+    ID       shift, and go to state 26
+    RSQUARE  shift, and go to state 45
+
+    modules  go to state 46
+
+
+State 30
+
+   29 module_decl_no_keyword: module_header COLON module_list • SEMICOLON
+   30                       | module_header COLON module_list • LBRACKET module_items RBRACKET
+
+    LBRACKET   shift, and go to state 47
+    SEMICOLON  shift, and go to state 48
+
+
+State 31
+
+   11 pattern_member_decl: ID • COLON type SEMICOLON
+
+    COLON  shift, and go to state 49
+
+
+State 32
+
+    8 pattern_definition: DEFINE PATTERN ID LBRACKET pattern_member_decls • pattern_spec_decls RBRACKET
+
+    SPEC  shift, and go to state 50
+
+    $default  reduce using rule 12 (pattern_spec_decls)
+
+    pattern_spec_decls  go to state 51
+    pattern_spec_decl   go to state 52
+
+
+State 33
+
+   10 pattern_member_decls: pattern_member_decl • pattern_member_decls
+
+    ID  shift, and go to state 31
+
+    $default  reduce using rule 9 (pattern_member_decls)
+
+    pattern_member_decls  go to state 53
+    pattern_member_decl   go to state 33
+
+
+State 34
+
+   21 pattern_member_assignment: ID • COLON ID SEMICOLON
+   22                          | ID • COLON module_list SEMICOLON
+
+    COLON  shift, and go to state 54
+
+
+State 35
+
+   18 pattern_application: APPLY PATTERN ID LBRACKET pattern_member_assignments • RBRACKET
+
+    RBRACKET  shift, and go to state 55
+
+
+State 36
+
+   20 pattern_member_assignments: pattern_member_assignment • pattern_member_assignments
+
+    ID  shift, and go to state 34
+
+    $default  reduce using rule 19 (pattern_member_assignments)
+
+    pattern_member_assignments  go to state 56
+    pattern_member_assignment   go to state 36
+
+
+State 37
+
+   26 modules: modules COMMA • ID
+
+    ID  shift, and go to state 57
+
+
+State 38
+
+   42 decorators: DECORATOR • decorators
+
+    DECORATOR  shift, and go to state 38
+
+    $default  reduce using rule 41 (decorators)
+
+    decorators  go to state 58
+
+
+State 39
+
+   48 for_each: FOR • ID IN module_list COLON LBRACKET module_items RBRACKET
+
+    ID  shift, and go to state 59
+
+
+State 40
+
+   37 module_items: module_item • module_items
+
+    DECORATOR  shift, and go to state 38
+    FOR        shift, and go to state 39
+
+    ID        reduce using rule 41 (decorators)
+    $default  reduce using rule 36 (module_items)
+
+    module_item    go to state 40
+    module_items   go to state 60
+    module_method  go to state 42
+    decorators     go to state 43
+    for_each       go to state 44
+
+
+State 41
+
+   28 module_decl_no_keyword: module_header COLON LBRACKET module_items • RBRACKET
+
+    RBRACKET  shift, and go to state 61
+
+
+State 42
+
+   34 module_item: module_method •
+
+    $default  reduce using rule 34 (module_item)
+
+
+State 43
+
+   38 module_method: decorators • ID method_name LPAREN method_args RPAREN SEMICOLON
+
+    ID  shift, and go to state 62
+
+
+State 44
+
+   35 module_item: for_each •
+
+    $default  reduce using rule 35 (module_item)
+
+
+State 45
+
+   24 module_list: LSQUARE RSQUARE •
+
+    $default  reduce using rule 24 (module_list)
+
+
+State 46
+
+   23 module_list: LSQUARE modules • RSQUARE
+   26 modules: modules • COMMA ID
+
+    RSQUARE  shift, and go to state 63
+    COMMA    shift, and go to state 37
+
+
+State 47
+
+   30 module_decl_no_keyword: module_header COLON module_list LBRACKET • module_items RBRACKET
+
+    DECORATOR  shift, and go to state 38
+    FOR        shift, and go to state 39
+
+    ID        reduce using rule 41 (decorators)
+    $default  reduce using rule 36 (module_items)
+
+    module_item    go to state 40
+    module_items   go to state 64
+    module_method  go to state 42
+    decorators     go to state 43
+    for_each       go to state 44
+
+
+State 48
+
+   29 module_decl_no_keyword: module_header COLON module_list SEMICOLON •
+
+    $default  reduce using rule 29 (module_decl_no_keyword)
+
+
+State 49
+
+   11 pattern_member_decl: ID COLON • type SEMICOLON
+
+    MODULE  shift, and go to state 65
+
+    type         go to state 66
+    single_type  go to state 67
+
+
+State 50
+
+   14 pattern_spec_decl: SPEC • module_decl_no_keyword
+
+    ID  shift, and go to state 13
+
+    module_decl_no_keyword  go to state 68
+    module_header           go to state 15
+
+
+State 51
+
+    8 pattern_definition: DEFINE PATTERN ID LBRACKET pattern_member_decls pattern_spec_decls • RBRACKET
+
+    RBRACKET  shift, and go to state 69
+
+
+State 52
+
+   13 pattern_spec_decls: pattern_spec_decl • pattern_spec_decls
+
+    SPEC  shift, and go to state 50
+
+    $default  reduce using rule 12 (pattern_spec_decls)
+
+    pattern_spec_decls  go to state 70
+    pattern_spec_decl   go to state 52
+
+
+State 53
+
+   10 pattern_member_decls: pattern_member_decl pattern_member_decls •
+
+    $default  reduce using rule 10 (pattern_member_decls)
+
+
+State 54
+
+   21 pattern_member_assignment: ID COLON • ID SEMICOLON
+   22                          | ID COLON • module_list SEMICOLON
+
+    ID       shift, and go to state 71
+    LSQUARE  shift, and go to state 29
+
+    module_list  go to state 72
+
+
+State 55
+
+   18 pattern_application: APPLY PATTERN ID LBRACKET pattern_member_assignments RBRACKET •
+
+    $default  reduce using rule 18 (pattern_application)
+
+
+State 56
+
+   20 pattern_member_assignments: pattern_member_assignment pattern_member_assignments •
+
+    $default  reduce using rule 20 (pattern_member_assignments)
+
+
+State 57
+
+   26 modules: modules COMMA ID •
+
+    $default  reduce using rule 26 (modules)
+
+
+State 58
+
+   42 decorators: DECORATOR decorators •
+
+    $default  reduce using rule 42 (decorators)
+
+
+State 59
+
+   48 for_each: FOR ID • IN module_list COLON LBRACKET module_items RBRACKET
+
+    IN  shift, and go to state 73
+
+
+State 60
+
+   37 module_items: module_item module_items •
+
+    $default  reduce using rule 37 (module_items)
+
+
+State 61
+
+   28 module_decl_no_keyword: module_header COLON LBRACKET module_items RBRACKET •
+
+    $default  reduce using rule 28 (module_decl_no_keyword)
+
+
+State 62
+
+   38 module_method: decorators ID • method_name LPAREN method_args RPAREN SEMICOLON
+
+    ID            shift, and go to state 74
+    STENCILED_ID  shift, and go to state 75
+
+    method_name  go to state 76
+
+
+State 63
+
+   23 module_list: LSQUARE modules RSQUARE •
+
+    $default  reduce using rule 23 (module_list)
+
+
+State 64
+
+   30 module_decl_no_keyword: module_header COLON module_list LBRACKET module_items • RBRACKET
+
+    RBRACKET  shift, and go to state 77
+
+
+State 65
+
+   17 single_type: MODULE •
+
+    $default  reduce using rule 17 (single_type)
+
+
+State 66
+
+   11 pattern_member_decl: ID COLON type • SEMICOLON
+
+    SEMICOLON  shift, and go to state 78
+
+
+State 67
+
+   15 type: single_type •
+   16     | single_type • LSQUARE RSQUARE
+
+    LSQUARE  shift, and go to state 79
+
+    $default  reduce using rule 15 (type)
+
+
+State 68
+
+   14 pattern_spec_decl: SPEC module_decl_no_keyword •
+
+    $default  reduce using rule 14 (pattern_spec_decl)
+
+
+State 69
+
+    8 pattern_definition: DEFINE PATTERN ID LBRACKET pattern_member_decls pattern_spec_decls RBRACKET •
+
+    $default  reduce using rule 8 (pattern_definition)
+
+
+State 70
+
+   13 pattern_spec_decls: pattern_spec_decl pattern_spec_decls •
+
+    $default  reduce using rule 13 (pattern_spec_decls)
+
+
+State 71
+
+   21 pattern_member_assignment: ID COLON ID • SEMICOLON
+
+    SEMICOLON  shift, and go to state 80
+
+
+State 72
+
+   22 pattern_member_assignment: ID COLON module_list • SEMICOLON
+
+    SEMICOLON  shift, and go to state 81
+
+
+State 73
+
+   48 for_each: FOR ID IN • module_list COLON LBRACKET module_items RBRACKET
+
+    LSQUARE  shift, and go to state 29
+
+    module_list  go to state 82
+
+
+State 74
+
+   39 method_name: ID •
+
+    $default  reduce using rule 39 (method_name)
+
+
+State 75
+
+   40 method_name: STENCILED_ID •
+
+    $default  reduce using rule 40 (method_name)
+
+
+State 76
+
+   38 module_method: decorators ID method_name • LPAREN method_args RPAREN SEMICOLON
+
+    LPAREN  shift, and go to state 83
+
+
+State 77
+
+   30 module_decl_no_keyword: module_header COLON module_list LBRACKET module_items RBRACKET •
+
+    $default  reduce using rule 30 (module_decl_no_keyword)
+
+
+State 78
+
+   11 pattern_member_decl: ID COLON type SEMICOLON •
+
+    $default  reduce using rule 11 (pattern_member_decl)
+
+
+State 79
+
+   16 type: single_type LSQUARE • RSQUARE
+
+    RSQUARE  shift, and go to state 84
+
+
+State 80
+
+   21 pattern_member_assignment: ID COLON ID SEMICOLON •
+
+    $default  reduce using rule 21 (pattern_member_assignment)
+
+
+State 81
+
+   22 pattern_member_assignment: ID COLON module_list SEMICOLON •
+
+    $default  reduce using rule 22 (pattern_member_assignment)
+
+
+State 82
+
+   48 for_each: FOR ID IN module_list • COLON LBRACKET module_items RBRACKET
+
+    COLON  shift, and go to state 85
+
+
+State 83
+
+   38 module_method: decorators ID method_name LPAREN • method_args RPAREN SEMICOLON
+
+    ID  shift, and go to state 86
+
+    $default  reduce using rule 43 (method_args)
+
+    method_args  go to state 87
+    method_arg   go to state 88
+
+
+State 84
+
+   16 type: single_type LSQUARE RSQUARE •
+
+    $default  reduce using rule 16 (type)
+
+
+State 85
+
+   48 for_each: FOR ID IN module_list COLON • LBRACKET module_items RBRACKET
+
+    LBRACKET  shift, and go to state 89
+
+
+State 86
+
+   46 method_arg: ID • QUALIFIERS
+   47           | ID •
+
+    QUALIFIERS  shift, and go to state 90
+
+    $default  reduce using rule 47 (method_arg)
+
+
+State 87
+
+   38 module_method: decorators ID method_name LPAREN method_args • RPAREN SEMICOLON
+
+    RPAREN  shift, and go to state 91
+
+
+State 88
+
+   44 method_args: method_arg •
+   45            | method_arg • COMMA method_args
+
+    COMMA  shift, and go to state 92
+
+    $default  reduce using rule 44 (method_args)
+
+
+State 89
+
+   48 for_each: FOR ID IN module_list COLON LBRACKET • module_items RBRACKET
+
+    DECORATOR  shift, and go to state 38
+    FOR        shift, and go to state 39
+
+    ID        reduce using rule 41 (decorators)
+    $default  reduce using rule 36 (module_items)
+
+    module_item    go to state 40
+    module_items   go to state 93
+    module_method  go to state 42
+    decorators     go to state 43
+    for_each       go to state 44
+
+
+State 90
+
+   46 method_arg: ID QUALIFIERS •
+
+    $default  reduce using rule 46 (method_arg)
+
+
+State 91
+
+   38 module_method: decorators ID method_name LPAREN method_args RPAREN • SEMICOLON
+
+    SEMICOLON  shift, and go to state 94
+
+
+State 92
+
+   45 method_args: method_arg COMMA • method_args
+
+    ID  shift, and go to state 86
+
+    $default  reduce using rule 43 (method_args)
+
+    method_args  go to state 95
+    method_arg   go to state 88
+
+
+State 93
+
+   48 for_each: FOR ID IN module_list COLON LBRACKET module_items • RBRACKET
+
+    RBRACKET  shift, and go to state 96
+
+
+State 94
+
+   38 module_method: decorators ID method_name LPAREN method_args RPAREN SEMICOLON •
+
+    $default  reduce using rule 38 (module_method)
+
+
+State 95
+
+   45 method_args: method_arg COMMA method_args •
+
+    $default  reduce using rule 45 (method_args)
+
+
+State 96
+
+   48 for_each: FOR ID IN module_list COLON LBRACKET module_items RBRACKET •
+
+    $default  reduce using rule 48 (for_each)

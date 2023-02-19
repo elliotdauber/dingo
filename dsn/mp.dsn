@@ -1,0 +1,7 @@
+module Notified;
+
+module Notifier : [Notified];
+
+module SpriteStore < Notified : [Notifier];
+
+module Game < Notified : [Notifier];
