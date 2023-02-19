@@ -2,6 +2,7 @@
 #define __DIR_HH__
 
 #include <iostream>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -168,17 +169,11 @@ private:
     ostream& stream;
 };
 
-// class PrinterVisitor : public Visitor {
-// public:
-//     PrinterVisitor(ostream& stream)
-//         : stream(stream)
-//     {
-//     }
-//     void visit_module(Module* module) override;
-
-// private:
-//     ostream& stream;
-// };
+class Verifier {
+public:
+    //returns true if the tester is a valid implementation of target
+    bool do_modules_conform(map<string, Module*> target, map<string, Module*> tester);
+};
 
 } //end namespace DIR
 
