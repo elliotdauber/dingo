@@ -11,6 +11,15 @@ Config Config::GetInstance()
 
 class IVisitor;
 
+class Num {
+public:
+    Num(int num)
+        : num(num)
+    {
+    }
+    int num;
+};
+
 class IExpr {
 public:
     virtual void accept(IVisitor* v) = 0;
@@ -19,6 +28,14 @@ public:
 class AddExpr : IExpr {
 public:
     void accept(IVisitor* v) override;
+    IExpr* lhs;
+    IExpr* rhs;
+};
+
+class NumExpr : IExpr {
+public:
+    void accept(IVisitor* v) override;
+    Num num;
 };
 
 class IVisitor {
@@ -26,12 +43,12 @@ public:
     virtual void visit_add(AddExpr* add) { }
 };
 
-class PrintingVisitor : IVisitor {
+class ExecutingVisitor : IVisitor {
 public:
     void visit_add(AddExpr* add) override;
 };
 
-void PrintingVisitor::visit_add(AddExpr* add)
+void ExecutingVisitor::visit_add(AddExpr* add)
 {
     Config config = Config::GetInstance();
 }

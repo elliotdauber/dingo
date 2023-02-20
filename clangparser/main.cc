@@ -132,6 +132,12 @@ public:
             DIR::Module* parent_module = modules[parent_name];
             modules[class_name]->parents.insert(parent_module);
         }
+
+        // Iterate over the fields
+        for (auto field = Decl->field_begin(); field != Decl->field_end(); ++field) {
+            string field_type = cleanup_type(field->getType().getAsString());
+            add_dependency(field_type);
+        }
         // }
         return true;
     }
