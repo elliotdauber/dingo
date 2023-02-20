@@ -60,8 +60,7 @@ void DSN::Orchestrator::parse_helper(std::istream& stream)
     return;
 }
 
-std::ostream&
-DSN::Orchestrator::print(std::ostream& stream)
+void DSN::Orchestrator::lower()
 {
     ModuleCreatorVisitor* creator = new ModuleCreatorVisitor();
     program->accept(creator);
@@ -70,13 +69,19 @@ DSN::Orchestrator::print(std::ostream& stream)
     PatternApplierVisitor* applier = new PatternApplierVisitor(updater->modules);
     program->accept(applier);
 
+    modules = applier->modules;
+}
+
+std::ostream&
+DSN::Orchestrator::print(std::ostream& stream)
+{
     stream << "digraph example {" << endl;
     stream << "rankdir=LR;" << endl;
     stream << "node [shape=square];" << endl;
 
     DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(stream);
 
-    for (auto it = applier->modules.begin(); it != applier->modules.end(); ++it) {
+    for (auto it = modules.begin(); it != modules.end(); ++it) {
         it->second->accept(node_gen);
     }
 
@@ -84,7 +89,7 @@ DSN::Orchestrator::print(std::ostream& stream)
 
     DIR::EdgeGenVisitor* edge_gen = new DIR::EdgeGenVisitor(stream);
 
-    for (auto it = applier->modules.begin(); it != applier->modules.end(); ++it) {
+    for (auto it = modules.begin(); it != modules.end(); ++it) {
         it->second->accept(edge_gen);
     }
 
@@ -93,7 +98,7 @@ DSN::Orchestrator::print(std::ostream& stream)
     stream << "fillcolor=yellow" << endl;
     stream << "}" << endl;
 
-    for (auto outer_it = applier->modules.begin(); outer_it != applier->modules.end(); ++outer_it) {
+    for (auto outer_it = modules.begin(); outer_it != modules.end(); ++outer_it) {
         string name = outer_it->first;
         DIR::ModuleComposite* modules = outer_it->second;
         for (DIR::Module*& module : modules->get_modules()) {

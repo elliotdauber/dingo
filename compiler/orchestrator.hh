@@ -6,6 +6,7 @@
 #include <string>
 
 #include "ast.hh"
+#include "dir.hh"
 #include "parser.tab.hh"
 #include "scanner.hh"
 
@@ -30,11 +31,15 @@ public:
     */
     void parse(istream& iss);
 
+    void lower();
+
     void add_module_decl(ModuleDecl* decl);
     void add_pattern_defn(PatternDefinition* dfn);
     void add_pattern_appl(PatternApplication* appl);
 
     ostream& print(ostream& stream);
+
+    map<string, DIR::ModuleComposite*> modules;
 
 private:
     void parse_helper(istream& stream);

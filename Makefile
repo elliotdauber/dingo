@@ -54,7 +54,7 @@ lexer: compiler/lexer.l
 LIBCLANG_DIR = /usr/local/Cellar/llvm/15.0.3/lib
 CLANG_INCLUDE_DIR = /usr/local/Cellar/llvm/15.0.3/include
 
-CLANGCXXFLAGS = -I$(CLANG_INCLUDE_DIR) -std=c++17 -I../compiler
+CLANGCXXFLAGS = -I$(CLANG_INCLUDE_DIR) -std=c++17 -I./compiler
 CLANGLDFLAGS = -L$(LIBCLANG_DIR) -lclang -lclangSupport -lclangAST -lclangBasic -lclangFrontend -lclangLex -lclangParse -lclangSema -lclangEdit -lclangAnalysis -lclangASTMatchers -lclangDriver -lclangSerialization -lclangToolingCore -lclangRewrite -lclangRewriteFrontend -lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore -lclangARCMigrate -lclangDynamicASTMatchers -lclangFormat -lclangTooling -lclangToolingInclusions -lLLVMCore -lLLVMSupport -lllvm -lZSTD -lz -lncurses
 
 cppparser: $(COMMON_OBJ) $(CLANGPARSER_OBJ)
@@ -66,7 +66,10 @@ clangparser/%.o: clangparser/%.cc
 # verifier
 
 verifier: $(COMMON_OBJ) $(COMPILER_OBJ_WITHOUT_MAIN) $(CLANGPARSER_OBJ_WITHOUT_MAIN) $(VERIFIER_OBJ)
-	$(CXX) $(CXXFLAGS) $(CLANGCXXFLAGS) $(COMMON_OBJ) $(COMPILER_OBJ_WITHOUT_MAIN) $(CLANGPARSER_OBJ_WITHOUT_MAIN) $(VERIFIER_OBJ) $(LIBS) -o $(BIN_DIR)/verifier $(LDFLAGS) $(CLANGLDFLAGS) 
+	$(CXX) $(CXXFLAGS) $(CLANGCXXFLAGS) -I./clangparser $(COMMON_OBJ) $(COMPILER_OBJ_WITHOUT_MAIN) $(CLANGPARSER_OBJ_WITHOUT_MAIN) $(VERIFIER_OBJ) $(LIBS) -o $(BIN_DIR)/verifier $(LDFLAGS) $(CLANGLDFLAGS) 
+
+verifier/%.o: verifier/%.cc
+	$(CXX) $(CXXFLAGS) $(CLANGCXXFLAGS) -I./clangparser -c $< -o $@
 
 clean:
 	rm -f $(COMMON_OBJ) $(COMPILER_OBJ) $(CLANGPARSER_OBJ) $(VERIFIER_OBJ) $(CLEANLIST) bin/*

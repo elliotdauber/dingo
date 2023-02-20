@@ -13,6 +13,8 @@ int main(int argc, char* argv[])
     if (argc >= 2) {
         DSN::Orchestrator orchestrator;
         orchestrator.parse(argv[1]);
+        //TODO: return if parse failed
+        orchestrator.lower();
 
         if (argc == 3) {
             ofstream outfile(argv[2]);

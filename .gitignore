@@ -1,6 +1,8 @@
 # Binaries
 bin/*
 
+.vscode
+
 compiler/lexer.yy.cc
 compiler/location.hh
 compiler/parser.output
