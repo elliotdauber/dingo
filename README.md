@@ -1,6 +1,8 @@
 # dingo
-A Language for Design
+A Lingo for Design
 
-So far, the compiler -> module-graph worlkflow is most-of-the-way implemented.
+Run `make` to make all binaries.
 
-You can `cd compiler`, `make`, and then `./compiler filename.dsn` to compile a .dsn file.
+1. compiler: use `./compile.sh`
+2. cppparser: run `bin/cppparser <cpp_file.cpp>`
+3. verifier: run `bin/verifier <dsn_file.dsn> <cpp_file.cpp>`

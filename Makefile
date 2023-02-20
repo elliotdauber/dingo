@@ -4,14 +4,19 @@ COMMON_SRC = $(wildcard common/*.cc)
 COMMON_OBJ = $(COMMON_SRC:.cc=.o)
 COMPILER_SRC = $(wildcard compiler/*.cc)
 COMPILER_OBJ = $(COMPILER_SRC:.cc=.o)
+COMPILER_OBJ_WITHOUT_MAIN = $(filter-out compiler/main.o, $(COMPILER_OBJ))
 CLANGPARSER_SRC = $(wildcard clangparser/*.cc)
 CLANGPARSER_OBJ = $(CLANGPARSER_SRC:.cc=.o)
+CLANGPARSER_OBJ_WITHOUT_MAIN = $(filter-out clangparser/main.o, $(CLANGPARSER_OBJ))
+VERIFIER_SRC = $(wildcard verifier/*.cc)
+VERIFIER_OBJ = $(VERIFIER_SRC:.cc=.o)
+
 
 BIN_DIR = bin
 
 LDFLAGS = 
 
-all: compiler cppparser
+all: compiler cppparser verifier
 
 #compiler
 
@@ -58,5 +63,10 @@ cppparser: $(COMMON_OBJ) $(CLANGPARSER_OBJ)
 clangparser/%.o: clangparser/%.cc
 	$(CXX) $(CXXFLAGS) $(CLANGCXXFLAGS) -c $< -o $@
 
+# verifier
+
+verifier: $(COMMON_OBJ) $(COMPILER_OBJ_WITHOUT_MAIN) $(CLANGPARSER_OBJ_WITHOUT_MAIN) $(VERIFIER_OBJ)
+	$(CXX) $(CXXFLAGS) $(CLANGCXXFLAGS) $(COMMON_OBJ) $(COMPILER_OBJ_WITHOUT_MAIN) $(CLANGPARSER_OBJ_WITHOUT_MAIN) $(VERIFIER_OBJ) $(LIBS) -o $(BIN_DIR)/verifier $(LDFLAGS) $(CLANGLDFLAGS) 
+
 clean:
-	rm -f $(COMMON_OBJ) $(COMPILER_OBJ) $(CLANGPARSER_OBJ) $(CLEANLIST) bin/*
+	rm -f $(COMMON_OBJ) $(COMPILER_OBJ) $(CLANGPARSER_OBJ) $(VERIFIER_OBJ) $(CLEANLIST) bin/*
