@@ -1,3 +1,13 @@
+# Binaries
+bin/*
+
+compiler/lexer.yy.cc
+compiler/location.hh
+compiler/parser.output
+compiler/parser.tab.*
+compiler/position.hh
+compiler/stack.hh
+
 # Prerequisites
 *.d
 
