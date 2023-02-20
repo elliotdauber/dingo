@@ -16,6 +16,25 @@ using namespace clang;
 using namespace clang::tooling;
 using namespace std;
 
+string cleanup_type(string type)
+{
+    //TODO: what if type is like "class_organizer" or something
+    if (type.find("class ") == 0) {
+        type = type.substr(6);
+    } else if (type.find("struct ") == 0) {
+        type = type.substr(7);
+    }
+
+    while (true) {
+        char last_char = type.at(type.length() - 1);
+        if (last_char == '*' or last_char == '&' or last_char == ' ') {
+            type = type.substr(0, type.length() - 1);
+        } else
+            break;
+    }
+    return type;
+}
+
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
     bool VisitFunctionDecl(FunctionDecl* f)
@@ -43,16 +62,30 @@ public:
                     modules[class_name] = new DIR::Module(class_name);
                 }
                 curr_module = modules[class_name];
+
+                // Get the number of parameters
+                unsigned int num_params = f->getNumParams();
+
+                // Print the types of each parameter
+                for (unsigned int i = 0; i < num_params; i++) {
+                    ParmVarDecl* param = f->getParamDecl(i);
+                    QualType type = param->getType();
+                    string param_type = cleanup_type(type.getAsString());
+                    cout << "  argument " << i << " type: " << param_type << endl;
+                    add_dependency(param_type);
+                }
+
+                QualType QT = f->getReturnType();
+                string return_type = cleanup_type(QT.getAsString());
+                cout << "return type: " << return_type << endl;
+
+                add_dependency(return_type);
             } else {
                 // This is not a member function
                 cout << "function " << f->getNameAsString()
                      << " is not a member function" << endl;
+                curr_module = nullptr;
             }
-
-            // Type name as string
-            QualType QT = f->getReturnType();
-            string TypeStr = QT.getAsString();
-            cout << "return type: " << TypeStr << endl;
         } else {
             cout << "in function declaration" << endl;
         }
@@ -80,26 +113,26 @@ public:
 
     bool VisitCXXRecordDecl(CXXRecordDecl* Decl)
     {
-        if (Decl->getDefinition()) {
-            string class_name = Decl->getNameAsString();
-            cout << "Found class: " << class_name << endl;
-            ;
-            if (!modules.count(class_name)) {
-                modules[class_name] = new DIR::Module(class_name);
-            }
-            curr_module = modules[class_name];
-
-            // Print the names of the parent classes
-            for (auto& BaseSpec : Decl->bases()) {
-                QualType BaseType = BaseSpec.getType();
-                CXXRecordDecl* BaseDecl = BaseType->getAsCXXRecordDecl();
-                string parent_name = BaseDecl->getNameAsString();
-                cout << "Parent class: " << parent_name << "\n";
-                //TODO: inheriting from ignored classes
-                DIR::Module* parent_module = modules[parent_name];
-                modules[class_name]->parents.insert(parent_module);
-            }
+        // if (Decl->getDefinition()) {
+        string class_name = Decl->getNameAsString();
+        cout << "Found class: " << class_name << endl;
+        ;
+        if (!modules.count(class_name)) {
+            modules[class_name] = new DIR::Module(class_name);
         }
+        curr_module = modules[class_name];
+
+        // Print the names of the parent classes
+        for (auto& BaseSpec : Decl->bases()) {
+            QualType BaseType = BaseSpec.getType();
+            CXXRecordDecl* BaseDecl = BaseType->getAsCXXRecordDecl();
+            string parent_name = BaseDecl->getNameAsString();
+            cout << "Parent class: " << parent_name << "\n";
+            //TODO: inheriting from ignored classes
+            DIR::Module* parent_module = modules[parent_name];
+            modules[class_name]->parents.insert(parent_module);
+        }
+        // }
         return true;
     }
 
@@ -107,18 +140,24 @@ public:
     {
         cout << "In variable decl: " << v->getNameAsString() << endl;
         QualType varType = v->getType();
-        string var_type = varType.getAsString();
+        string var_type = cleanup_type(varType.getAsString());
         cout << "Variable type: " << var_type << endl;
         //TODO: wb struct?
-        if (var_type.find("class ") == 0) {
-            var_type = var_type.substr(6);
-        }
-        if (modules.count(var_type)) {
-            cout << "inserting dep on " << var_type << endl;
-            curr_module->dependencies.insert(modules[var_type]);
-        }
+        add_dependency(var_type);
         if (v->hasInit()) {
             TraverseStmt(v->getInit());
+        }
+        return true;
+    }
+
+    bool VisitCXXConstructExpr(CXXConstructExpr* c)
+    {
+        CXXConstructorDecl* constructor = c->getConstructor();
+        CXXRecordDecl* record = constructor->getParent();
+        if (record) {
+            string constructor_class = record->getNameAsString();
+            cout << "calling constructor of class " << constructor_class << endl;
+            add_dependency(constructor_class);
         }
         return true;
     }
@@ -146,6 +185,29 @@ public:
         }
 
         return true;
+    }
+
+    // bool VisitReturnStmt(ReturnStmt* r)
+    // {
+
+    // }
+
+    // bool VisitForStmt(ForStmt* f)
+    // {
+    //     // TraverseStmt(f->getCond());
+    //     // TraverseStmt(f->getInc());
+    // }
+
+    void add_dependency(string dependency_name)
+    {
+        if (curr_module == nullptr
+            or curr_module->name == dependency_name
+            or !modules.count(dependency_name)) {
+            return;
+        }
+
+        cout << "inserting dep on " << dependency_name << endl;
+        curr_module->dependencies.insert(modules[dependency_name]);
     }
 
     DIR::Module* curr_module;

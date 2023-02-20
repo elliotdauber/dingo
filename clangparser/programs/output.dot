@@ -1,13 +1,19 @@
 digraph example {
 rankdir=LR;
 node [shape=square];
+AddExpr [label="AddExpr"];
 Config [label="Config"];
-Expr [label="Expr"];
 IExpr [label="IExpr"];
-Server [label="Server"];
+IVisitor [label="IVisitor"];
+PrintingVisitor [label="PrintingVisitor"];
 
-Expr -> IExpr[arrowhead=odot];
-Server -> Config[arrowhead=normal];
+AddExpr -> IExpr[arrowhead=odot];
+AddExpr -> IVisitor[arrowhead=normal];
+IExpr -> IVisitor[arrowhead=normal];
+IVisitor -> AddExpr[arrowhead=normal];
+PrintingVisitor -> IVisitor[arrowhead=odot];
+PrintingVisitor -> Config[arrowhead=normal];
+PrintingVisitor -> AddExpr[arrowhead=normal];
 label="The System"
 style=filled
 fillcolor=yellow

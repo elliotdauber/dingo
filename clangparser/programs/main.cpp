@@ -1,47 +1,47 @@
 class Config {
+public:
+    static Config GetInstance();
 };
 
-class Server {
-    void run();
-};
-
-void Server::run()
+Config Config::GetInstance()
 {
-    Config config = Config();
+    static Config instance;
+    return instance;
 }
+
+class IVisitor;
 
 class IExpr {
-    Server serve();
-};
-
-class Expr : IExpr {
 public:
-    int add_one(int x);
-    void add_ntimes(int num_times, int num);
+    virtual void accept(IVisitor* v) = 0;
 };
 
-int Expr::add_one(int x)
+class AddExpr : IExpr {
+public:
+    void accept(IVisitor* v) override;
+};
+
+class IVisitor {
+public:
+    virtual void visit_add(AddExpr* add) { }
+};
+
+class PrintingVisitor : IVisitor {
+public:
+    void visit_add(AddExpr* add) override;
+};
+
+void PrintingVisitor::visit_add(AddExpr* add)
 {
-    return x + 1;
+    Config config = Config::GetInstance();
 }
 
-void Expr::add_ntimes(int num_times, int num)
+void AddExpr::accept(IVisitor* v)
 {
-    for (int i = 0; i < num_times; i++) {
-        if (i > 0) {
-            num = add_one(num);
-        }
-        num = add_one(num);
-    }
-}
-
-void not_member()
-{
-}
+    v->visit_add(this);
+};
 
 int main()
 {
-    Expr* expr = new Expr();
-    expr->add_ntimes(5, 5);
     return 0;
 }
