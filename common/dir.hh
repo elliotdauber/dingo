@@ -173,6 +173,8 @@ class Verifier {
 public:
     //returns true if the tester is a valid implementation of target
     bool do_modules_conform(map<string, Module*> target, map<string, Module*> tester);
+
+    void generate_graph_png(map<string, Module*> modules, string& file_prefix);
 };
 
 } //end namespace DIR

@@ -19,6 +19,7 @@ void DSN::Orchestrator::parse(const char* const filename)
     assert(filename != nullptr);
     std::ifstream in_file(filename);
     if (!in_file.good()) {
+        cout << "bad file in Orchestrator::parse" << endl;
         exit(EXIT_FAILURE);
     }
     parse_helper(in_file);
@@ -75,28 +76,9 @@ void DSN::Orchestrator::lower()
 std::ostream&
 DSN::Orchestrator::print(std::ostream& stream)
 {
-    stream << "digraph example {" << endl;
-    stream << "rankdir=LR;" << endl;
-    stream << "node [shape=square];" << endl;
-
-    DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(stream);
-
-    for (auto it = modules.begin(); it != modules.end(); ++it) {
-        it->second->accept(node_gen);
-    }
-
-    stream << endl;
-
-    DIR::EdgeGenVisitor* edge_gen = new DIR::EdgeGenVisitor(stream);
-
-    for (auto it = modules.begin(); it != modules.end(); ++it) {
-        it->second->accept(edge_gen);
-    }
-
-    stream << "label=\"The System\"" << endl;
-    stream << "style=filled" << endl;
-    stream << "fillcolor=yellow" << endl;
-    stream << "}" << endl;
+    DIR::Verifier v;
+    string file_prefix = "compiler_main";
+    v.generate_graph_png(get_modules(), file_prefix);
 
     for (auto outer_it = modules.begin(); outer_it != modules.end(); ++outer_it) {
         string name = outer_it->first;
@@ -155,4 +137,17 @@ void DSN::Orchestrator::add_pattern_defn(PatternDefinition* defn)
 void DSN::Orchestrator::add_pattern_appl(PatternApplication* appl)
 {
     program->add_pattern_appl(appl);
+}
+
+map<string, DIR::Module*> DSN::Orchestrator::get_modules()
+{
+    map<string, DIR::Module*> result {};
+    for (auto it = modules.begin(); it != modules.end(); ++it) {
+        string name = it->first;
+        DIR::ModuleComposite* composite = it->second;
+        if (composite->get_modules().size() == 1) {
+            result[name] = composite->get_modules()[0];
+        }
+    }
+    return result;
 }

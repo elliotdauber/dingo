@@ -39,7 +39,7 @@ public:
 
     ostream& print(ostream& stream);
 
-    map<string, DIR::ModuleComposite*> modules;
+    map<string, DIR::Module*> get_modules();
 
 private:
     void parse_helper(istream& stream);
@@ -51,6 +51,8 @@ private:
     const string red = "\033[1;31m";
     const string blue = "\033[1;36m";
     const string norm = "\033[0m";
+
+    map<string, DIR::ModuleComposite*> modules;
 };
 
 }

@@ -10,9 +10,21 @@ int main(int argc, char* argv[])
         DSN::Orchestrator orchestrator;
         orchestrator.parse(argv[1]);
         orchestrator.lower();
-        map<string, DIR::ModuleComposite*> target_modules = orchestrator.modules;
+        map<string, DIR::Module*> target_modules = orchestrator.get_modules();
 
         map<string, DIR::Module*> tester_modules = parse(argv[2]);
+
+        DIR::Verifier v;
+        if (v.do_modules_conform(target_modules, tester_modules)) {
+            cout << "Success: everything looks good!" << endl;
+        } else {
+            cout << "Failure: check the errors" << endl;
+        }
+
+        string dingofile_prefix = "verifier_dingofile";
+        string codefile_prefix = "verifier_codefile";
+        v.generate_graph_png(target_modules, dingofile_prefix);
+        v.generate_graph_png(tester_modules, codefile_prefix);
 
     } else {
         cout << "usage: ./verifier <dsn_file> <cpp_file>" << endl;

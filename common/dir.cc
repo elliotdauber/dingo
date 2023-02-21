@@ -1,4 +1,6 @@
 #include "dir.hh"
+#include <fstream>
+#include <sstream>
 
 namespace DIR {
 
@@ -55,7 +57,7 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
         string module_name = module_it->first;
         Module* tester_module = module_it->second;
         if (!target.count(module_name)) {
-            cout << "Warning: Module " << module_name << " was defined in target code, but not in Dingo." << endl;
+            cout << "Warning: Module " << module_name << " was defined in code, but not in Dingo." << endl;
             continue;
         }
         Module* target_module = target[module_name];
@@ -65,20 +67,102 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
                 return p->name == dependency_name;
             });
             if (find_it == target_module->dependencies.end()) {
-                cerr << "Error: In the target code, the module " << module_name << " has a dependency on " << dependency_name << ", but this was not specified in the Dingofile." << endl;
+                cerr << "Error: In the code, the module " << module_name << " has a dependency on " << dependency_name << ", but this was not specified in the Dingofile." << endl;
                 return false;
             }
         }
 
-        // for (auto it = tester_module->parents.begin(); it != tester_module->parents.end(); ++it) {
-        //     string parent_name = (*it)->name;
-        //     if (!target_module->parents.count(parent_name)) {
-        //         cerr << "Error: In the target code, the module " << module_name << " has parent " << parent_name << ", but this was not specified in the Dingofile." << endl;
-        //         exit(1);
-        //     }
-        // }
+        for (auto parent_it = tester_module->parents.begin(); parent_it != tester_module->parents.end(); ++parent_it) {
+            string parent_name = (*parent_it)->name;
+            auto find_it = find_if(target_module->parents.begin(), target_module->parents.end(), [&parent_name](const Module* p) {
+                return p->name == parent_name;
+            });
+            if (find_it == target_module->parents.end()) {
+                cerr << "Error: In the target code, the module " << module_name << " has parent " << parent_name << ", but this was not specified in the Dingofile." << endl;
+                return false;
+            }
+        }
+    }
+
+    for (auto module_it = target.begin(); module_it != target.end(); ++module_it) {
+        string module_name = module_it->first;
+        Module* target_module = module_it->second;
+        if (!tester.count(module_name)) {
+            cout << "Warning: Module " << module_name << " was defined in  Dingo, but not in code." << endl;
+            continue;
+        }
+        Module* tester_module = tester[module_name];
+        for (auto dep_it = target_module->dependencies.begin(); dep_it != target_module->dependencies.end(); ++dep_it) {
+            string dependency_name = (*dep_it)->name;
+            auto find_it = find_if(tester_module->dependencies.begin(), tester_module->dependencies.end(), [&dependency_name](const Module* p) {
+                return p->name == dependency_name;
+            });
+            if (find_it == tester_module->dependencies.end()) {
+                cerr << "Warning: In the Dingofile, the module " << module_name << " has a dependency on " << dependency_name << ", but this is not used in the code." << endl;
+            }
+        }
+
+        for (auto parent_it = target_module->parents.begin(); parent_it != target_module->parents.end(); ++parent_it) {
+            string parent_name = (*parent_it)->name;
+            auto find_it = find_if(tester_module->parents.begin(), tester_module->parents.end(), [&parent_name](const Module* p) {
+                return p->name == parent_name;
+            });
+            if (find_it == tester_module->parents.end()) {
+                cerr << "Error: In the Dingofile, the module " << module_name << " has parent " << parent_name << ", but this is not true in the code" << endl;
+                return false;
+            }
+        }
     }
     return true;
+}
+
+void Verifier::generate_graph_png(map<string, Module*> modules, string& file_prefix)
+{
+    ostringstream dotfile_name;
+    dotfile_name << file_prefix << ".dot";
+    ofstream dotfile(dotfile_name.str());
+    dotfile
+        << "digraph example {" << endl;
+    dotfile << "rankdir=LR;" << endl;
+    dotfile << "node [shape=square];" << endl;
+
+    DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(dotfile);
+
+    for (auto it = modules.begin(); it != modules.end(); ++it) {
+        it->second->accept(node_gen);
+    }
+
+    dotfile << endl;
+
+    DIR::EdgeGenVisitor* edge_gen = new DIR::EdgeGenVisitor(dotfile);
+
+    for (auto it = modules.begin(); it != modules.end(); ++it) {
+        it->second->accept(edge_gen);
+    }
+
+    dotfile << "label=\"The System\"" << endl;
+    dotfile << "style=filled" << endl;
+    dotfile << "fillcolor=yellow" << endl;
+    dotfile << "}" << endl;
+
+    dotfile.close();
+
+    ostringstream png_name;
+    png_name << file_prefix << ".png";
+
+    ostringstream oss;
+    oss << "dot -Tpng " << dotfile_name.str() << " > " << png_name.str();
+    FILE* fp = popen(oss.str().c_str(), "r");
+
+    char buffer[256];
+    string output = "";
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        output += buffer;
+    }
+
+    cout << output << endl;
+
+    pclose(fp);
 }
 
 } //end namespace DIR

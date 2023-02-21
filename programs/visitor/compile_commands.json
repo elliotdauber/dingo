@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++11",
+      "-Wall",
+      "-Wextra",
+      "-I",
+      "includes",
+      "-o",
+      "myprogram",
+      "main.cpp"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo/programs/visitor",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/programs/visitor/main.cpp",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/programs/visitor/myprogram"
+  }
+]

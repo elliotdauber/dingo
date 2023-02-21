@@ -19,9 +19,11 @@ using namespace clang;
 using namespace clang::tooling;
 using namespace std;
 
+//TODO: this is a hack, find a better way
+map<string, DIR::Module*> global_modules;
+
 string cleanup_type(string type)
 {
-    //TODO: what if type is like "class_organizer" or something
     if (type.find("class ") == 0) {
         type = type.substr(6);
     } else if (type.find("struct ") == 0) {
@@ -234,32 +236,7 @@ public:
     {
         Visitor.TraverseDecl(Context.getTranslationUnitDecl());
 
-        ofstream dotfile("output.dot");
-        dotfile
-            << "digraph example {" << endl;
-        dotfile << "rankdir=LR;" << endl;
-        dotfile << "node [shape=square];" << endl;
-
-        DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(dotfile);
-
-        for (auto it = Visitor.modules.begin(); it != Visitor.modules.end(); ++it) {
-            it->second->accept(node_gen);
-        }
-
-        dotfile << endl;
-
-        DIR::EdgeGenVisitor* edge_gen = new DIR::EdgeGenVisitor(dotfile);
-
-        for (auto it = Visitor.modules.begin(); it != Visitor.modules.end(); ++it) {
-            it->second->accept(edge_gen);
-        }
-
-        dotfile << "label=\"The System\"" << endl;
-        dotfile << "style=filled" << endl;
-        dotfile << "fillcolor=yellow" << endl;
-        dotfile << "}" << endl;
-
-        dotfile.close();
+        global_modules = Visitor.modules;
     }
 
     MyASTVisitor Visitor;
@@ -278,34 +255,34 @@ public:
     // unique_ptr<MyASTConsumer> consumer;
 };
 
-class MyFrontendActionFactory : public FrontendActionFactory {
-public:
-    MyFrontendActionFactory(unique_ptr<MyFrontendAction> action)
-        : action(action)
-    {
-    }
+// class MyFrontendActionFactory : public FrontendActionFactory {
+// public:
+//     MyFrontendActionFactory(unique_ptr<FrontendAction> action)
+//         : action(action)
+//     {
+//     }
 
-    virtual unique_ptr<FrontendAction> create() override
-    {
-        // return make_unique<MyFrontendAction>();
-        return action;
-    }
+//     virtual unique_ptr<FrontendAction> create() override
+//     {
+//         // return make_unique<MyFrontendAction>();
+//         return action;
+//     }
 
-    unique_ptr<MyFrontendAction> action;
-};
+//     unique_ptr<FrontendAction> action;
+// };
 
-map<string, DIR::Module*> parse(string filename)
+map<string, DIR::Module*> parse(const char* filename)
 {
     llvm::cl::OptionCategory oc("my_option", "todo");
-    int argc = 1;
-    const char* argv[2] = { filename.c_str(), NULL };
+    int argc = 2;
+    const char* argv[3] = { "bin/cppparser", filename, NULL };
     llvm::Expected<CommonOptionsParser> OptionsParser = CommonOptionsParser::create(argc, argv, oc);
     ClangTool Tool((*OptionsParser).getCompilations(),
         (*OptionsParser).getSourcePathList());
-    unique_ptr<MyFrontendAction> action = make_unique<MyFrontendAction>();
-    FrontendActionFactory* action_factory = new MyFrontendActionFactory(action);
-    Tool.run(action_factory);
-    return action->consumer->Visitor.modules;
+    // unique_ptr<MyFrontendAction> action = make_unique<MyFrontendAction>();
+    unique_ptr<FrontendActionFactory> action_factory = newFrontendActionFactory<MyFrontendAction>();
+    Tool.run(action_factory.get());
+    return global_modules;
 }
 
 #endif

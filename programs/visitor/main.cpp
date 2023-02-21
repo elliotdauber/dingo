@@ -1,3 +1,5 @@
+#include <string.h>
+
 class Config {
 public:
     static Config GetInstance();
