@@ -42,11 +42,21 @@ string cleanup_type(string type)
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
+    void setContext(ASTContext& context) { astContext = &context; }
+
+    bool isInMainFile(SourceLocation loc)
+    {
+        SourceManager& SM = astContext->getSourceManager();
+        FileID mainFileID = SM.getMainFileID();
+        FileID locFileID = SM.getFileID(loc);
+        return mainFileID == locFileID;
+    }
+
     bool VisitFunctionDecl(FunctionDecl* f)
     {
-        // cout << "in function decl! " << f->getNameAsString() << endl;
-        // TraverseStmt(f->getBody());
-        // return true;
+        if (!isInMainFile(f->getSourceRange().getBegin())) {
+            return true;
+        }
         if (f->hasBody()) {
             cout << "in function declaration with body!" << endl;
             Stmt* FuncBody = f->getBody();
@@ -97,27 +107,10 @@ public:
         return true;
     }
 
-    // bool VisitStmt(Stmt* s)
-    // {
-    //     cout << "In statement: " << s->getStmtClassName() << endl;
-
-    //     return true;
-    // }
-
-    bool VisitIfStmt(IfStmt* s)
-    {
-        cout << "ATTENTION: In if statement" << endl;
-        TraverseStmt(s->getCond());
-        TraverseStmt(s->getThen());
-        if (s->getElse()) {
-            TraverseStmt(s->getElse());
-        }
-
-        return true;
-    }
-
     bool VisitCXXRecordDecl(CXXRecordDecl* Decl)
     {
+        if (!isInMainFile(Decl->getSourceRange().getBegin()))
+            return true;
         // if (Decl->getDefinition()) {
         string class_name = Decl->getNameAsString();
         cout << "Found class: " << class_name << endl;
@@ -149,11 +142,12 @@ public:
 
     bool VisitVarDecl(VarDecl* v)
     {
+        if (!isInMainFile(v->getSourceRange().getBegin()))
+            return true;
         cout << "In variable decl: " << v->getNameAsString() << endl;
         QualType varType = v->getType();
         string var_type = cleanup_type(varType.getAsString());
         cout << "Variable type: " << var_type << endl;
-        //TODO: wb struct?
         add_dependency(var_type);
         if (v->hasInit()) {
             TraverseStmt(v->getInit());
@@ -163,6 +157,8 @@ public:
 
     bool VisitCXXConstructExpr(CXXConstructExpr* c)
     {
+        if (!isInMainFile(c->getSourceRange().getBegin()))
+            return false;
         CXXConstructorDecl* constructor = c->getConstructor();
         CXXRecordDecl* record = constructor->getParent();
         if (record) {
@@ -173,17 +169,10 @@ public:
         return true;
     }
 
-    //TODO: do we need simple traversers like these?
-    //or is there a default?
-    bool VisitWhileStmt(WhileStmt* s)
-    {
-        TraverseStmt(s->getCond());
-        TraverseStmt(s->getBody());
-        return true;
-    }
-
     bool VisitCXXMemberCallExpr(CXXMemberCallExpr* expr)
     {
+        if (!isInMainFile(expr->getSourceRange().getBegin()))
+            return true;
         // Get the method being called
         CXXMethodDecl* methodDecl = expr->getMethodDecl();
 
@@ -198,17 +187,6 @@ public:
         return true;
     }
 
-    // bool VisitReturnStmt(ReturnStmt* r)
-    // {
-
-    // }
-
-    // bool VisitForStmt(ForStmt* f)
-    // {
-    //     // TraverseStmt(f->getCond());
-    //     // TraverseStmt(f->getInc());
-    // }
-
     void add_dependency(string dependency_name)
     {
         if (curr_module == nullptr
@@ -221,8 +199,16 @@ public:
         curr_module->dependencies.insert(modules[dependency_name]);
     }
 
+    // bool VisitStmt(Stmt* s)
+    // {
+    //     cout << "In statement: " << s->getStmtClassName() << endl;
+
+    //     return true;
+    // }
+
     DIR::Module* curr_module;
     map<string, DIR::Module*> modules;
+    ASTContext* astContext;
 };
 
 class MyASTConsumer : public ASTConsumer {
@@ -234,8 +220,8 @@ public:
 
     virtual void HandleTranslationUnit(ASTContext& Context)
     {
+        Visitor.setContext(Context);
         Visitor.TraverseDecl(Context.getTranslationUnitDecl());
-
         global_modules = Visitor.modules;
     }
 
@@ -247,29 +233,9 @@ public:
     virtual unique_ptr<ASTConsumer> CreateASTConsumer(
         CompilerInstance& Compiler, llvm::StringRef InFile)
     {
-        // consumer = make_unique<MyASTConsumer>();
-        // return consumer;
         return make_unique<MyASTConsumer>();
     }
-
-    // unique_ptr<MyASTConsumer> consumer;
 };
-
-// class MyFrontendActionFactory : public FrontendActionFactory {
-// public:
-//     MyFrontendActionFactory(unique_ptr<FrontendAction> action)
-//         : action(action)
-//     {
-//     }
-
-//     virtual unique_ptr<FrontendAction> create() override
-//     {
-//         // return make_unique<MyFrontendAction>();
-//         return action;
-//     }
-
-//     unique_ptr<FrontendAction> action;
-// };
 
 map<string, DIR::Module*> parse(const char* filename)
 {
@@ -279,7 +245,6 @@ map<string, DIR::Module*> parse(const char* filename)
     llvm::Expected<CommonOptionsParser> OptionsParser = CommonOptionsParser::create(argc, argv, oc);
     ClangTool Tool((*OptionsParser).getCompilations(),
         (*OptionsParser).getSourcePathList());
-    // unique_ptr<MyFrontendAction> action = make_unique<MyFrontendAction>();
     unique_ptr<FrontendActionFactory> action_factory = newFrontendActionFactory<MyFrontendAction>();
     Tool.run(action_factory.get());
     return global_modules;

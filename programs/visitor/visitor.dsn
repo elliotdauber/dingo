@@ -8,4 +8,4 @@ module Num;
 
 module IExpr : [IVisitor];
 
-module AddExpr : [IVisitor, IExpr];
+module AddExpr < IExpr : [IVisitor, IExpr];
