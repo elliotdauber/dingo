@@ -111,10 +111,10 @@ public:
 
 class ModuleMethod : public AbstractModuleMethod {
 public:
-    ModuleMethod(DecoratorList* decorators, string ret_type, string name, MethodArgList* args);
+    ModuleMethod(DecoratorList* decorators, MethodArg* ret_type, string name, MethodArgList* args);
     void accept(Visitor* v) override;
     DecoratorList* decorators;
-    string ret_type;
+    MethodArg* ret_type;
     string name;
     MethodArgList* args;
 

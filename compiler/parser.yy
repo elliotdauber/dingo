@@ -194,7 +194,7 @@ module_item : module_method {$$ = $1;}
 module_items : %empty {$$ = new ModuleMethodList();}
                | module_item module_items {$$ = new ModuleMethodList($2, $1);};
 
-module_method : decorators ID method_name LPAREN method_args RPAREN SEMICOLON {$$ = new ModuleMethod($1, $2, $3, $5);};
+module_method : decorators method_arg method_name LPAREN method_args RPAREN SEMICOLON {$$ = new ModuleMethod($1, $2, $3, $5);};
 
 method_name : ID {$$ = $1;}
             | STENCILED_ID {$$ = $1;};

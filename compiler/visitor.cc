@@ -130,7 +130,7 @@ void ModuleUpdaterVisitor::visit_module_method(ModuleMethod* method)
     }
 
     //TODO: allow int, string, void, etc
-    string ret_type = method->ret_type;
+    string ret_type = method->ret_type->type;
     if (foreach_bindings.count(ret_type)) {
         ret_type = foreach_bindings[ret_type];
     } else if (!modules.count(ret_type)) {
@@ -186,7 +186,7 @@ void ModuleUpdaterVisitor::visit_module_method(ModuleMethod* method)
 
     methods.push_back(new DIR::Method(
         decorators.str(),
-        new DIR::Type(ret_type, ""), //TODO: allow qualifiers on return type
+        new DIR::Type(ret_type, method->ret_type->qualifiers),
         name,
         args));
 }

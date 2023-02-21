@@ -115,7 +115,7 @@ void MethodArgList::accept(Visitor* v)
     v->visit_method_arg_list(this);
 }
 
-ModuleMethod::ModuleMethod(DecoratorList* decorators, string ret_type, string name, MethodArgList* args)
+ModuleMethod::ModuleMethod(DecoratorList* decorators, MethodArg* ret_type, string name, MethodArgList* args)
     : decorators(decorators)
     , ret_type(ret_type)
     , name(name)
