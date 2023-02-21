@@ -10,8 +10,10 @@
 #include "clang/Tooling/Tooling.h"
 #include <clang/Tooling/CommonOptionsParser.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include "dir.hh"
 
@@ -38,6 +40,24 @@ string cleanup_type(string type)
             break;
     }
     return type;
+}
+
+string type_qualifiers(string type)
+{
+    ostringstream qualifiers;
+    while (true) {
+        char last_char = type.at(type.length() - 1);
+        if (last_char == '*' or last_char == '&') {
+            qualifiers << last_char;
+            type = type.substr(0, type.length() - 1);
+        } else if (last_char == ' ') {
+            type = type.substr(0, type.length() - 1);
+        } else
+            break;
+    }
+    string qualifiers_str = qualifiers.str();
+    reverse(qualifiers_str.begin(), qualifiers_str.end());
+    return qualifiers_str;
 }
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
@@ -81,20 +101,69 @@ public:
                 // Get the number of parameters
                 unsigned int num_params = f->getNumParams();
 
+                vector<DIR::Type*> param_types;
+
                 // Print the types of each parameter
                 for (unsigned int i = 0; i < num_params; i++) {
                     ParmVarDecl* param = f->getParamDecl(i);
                     QualType type = param->getType();
                     string param_type = cleanup_type(type.getAsString());
+                    string qualifiers = type_qualifiers(type.getAsString());
                     cout << "  argument " << i << " type: " << param_type << endl;
                     add_dependency(param_type);
+                    param_types.push_back(new DIR::Type(param_type, qualifiers));
                 }
 
                 QualType QT = f->getReturnType();
                 string return_type = cleanup_type(QT.getAsString());
+                string qualifiers = type_qualifiers(QT.getAsString());
                 cout << "return type: " << return_type << endl;
 
                 add_dependency(return_type);
+                DIR::Type* return_full_type = new DIR::Type(return_type, qualifiers);
+
+                //TODO: check this!
+                AccessSpecifier access = f->getAccess();
+                std::string accessSpecifierString;
+                switch (access) {
+                case AccessSpecifier::AS_public:
+                    accessSpecifierString = "+";
+                    break;
+                case AccessSpecifier::AS_protected:
+                    accessSpecifierString = "=";
+                    break;
+                case AccessSpecifier::AS_private:
+                    accessSpecifierString = "-";
+                    break;
+                default:
+                    accessSpecifierString = "?";
+                    break;
+                }
+
+                // Get storage class specifier
+                StorageClass storageClass = f->getStorageClass();
+                string storageClassString;
+                switch (storageClass) {
+                case StorageClass::SC_Static:
+                    storageClassString = "$";
+                    break;
+                default:
+                    storageClassString = "";
+                    break;
+                }
+
+                bool isVirtual = f->isVirtualAsWritten();
+
+                string decorators = accessSpecifierString + storageClassString;
+                if (isVirtual) {
+                    decorators += "@";
+                }
+
+                cout << "Function " << func_name << " in class " << class_name << " has decorators " << decorators << endl;
+
+                DIR::Method* method = new DIR::Method(decorators, return_full_type, func_name, param_types);
+
+                curr_module->methods.push_back(method);
             } else {
                 // This is not a member function
                 cout << "function " << f->getNameAsString()
