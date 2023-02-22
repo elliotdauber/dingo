@@ -231,8 +231,10 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
         cerr << "Attempting to apply an undeclared pattern: " << name << endl;
         exit(1);
     }
-
-    PatternDefinition* pattern_defn = pattern_defns[name];
+    DIR::Pattern* pat = new DIR::Pattern(name);
+    DIR::PatternInstance* pat_instance = new DIR::PatternInstance(pat, num_patterns_applied++);
+    PatternDefinition* pattern_defn
+        = pattern_defns[name];
 
     size_t defn_num_members = pattern_defn->members->items.size();
     size_t appl_num_members = pattern_appl->member_assignments->items.size();
@@ -281,6 +283,11 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
                 exit(1);
             }
             modules[defn_member->name] = modules[assignment_modules[0]->name];
+        }
+
+        DIR::ModuleComposite* mod_comp = modules[defn_member->name];
+        for (DIR::Module* module : mod_comp->get_modules()) {
+            module->patterns.insert(pat_instance);
         }
     }
 

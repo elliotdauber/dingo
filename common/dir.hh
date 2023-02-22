@@ -14,15 +14,30 @@ namespace DIR {
 class Visitor;
 
 class Pattern {
+public:
+    Pattern(string name)
+        : name(name)
+    {
+    }
     string name;
 };
 
 class PatternInstance {
 public:
     PatternInstance();
+    PatternInstance(Pattern* pattern, int id)
+        : pattern(pattern)
+        , id(id)
+    {
+    }
     Pattern* pattern;
     // vector<DModule*> modules;
     int id;
+
+    void print(ostream& stream)
+    {
+        stream << pattern->name << id;
+    }
 };
 
 class Type {
@@ -34,6 +49,11 @@ public:
     }
     string type;
     string qualifiers;
+
+    bool operator==(const Type& other) const
+    {
+        return type == other.type and qualifiers == other.qualifiers;
+    }
 };
 
 class Method {
@@ -49,6 +69,38 @@ public:
     Type* ret_type;
     string name;
     vector<Type*> args;
+
+    set<char> create_decorator_set() const
+    {
+        set<char> dec_set;
+        for (size_t i = 0; i < decorators.length(); i++) {
+            dec_set.insert(decorators[i]);
+        }
+        return dec_set;
+    }
+
+    bool operator==(const Method& other) const
+    {
+        set<char> my_decorator_set = create_decorator_set();
+        set<char> other_decorator_set = other.create_decorator_set();
+
+        bool args_equal = true;
+        if (args.size() != other.args.size()) {
+            args_equal = false;
+        } else {
+            for (size_t i = 0; i < args.size(); i++) {
+                if (!(*args[i] == *other.args[i])) {
+                    args_equal = false;
+                    break;
+                }
+            }
+        }
+
+        return my_decorator_set == other_decorator_set
+            and *ret_type == *other.ret_type
+            and name == other.name
+            and args_equal;
+    }
 
     void print(ostream& stream)
     {

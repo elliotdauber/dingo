@@ -1,11 +1,53 @@
 module IVisitor : [AddExpr];
 
-module Visitor;
-
 module Config;
+
+apply pattern Singleton {
+    singleton : Config;
+}
 
 module Num;
 
 module IExpr : [IVisitor];
 
-module AddExpr < IExpr : [IVisitor, IExpr];
+module NumExpr < IExpr : [Num];
+
+module AddExpr < IExpr : [IExpr];
+
+module ExecutingVisitor : [Config];
+
+apply pattern Visitor {
+    acceptors : [NumExpr, AddExpr];
+    visitor_base : IVisitor;
+    visitors : [ExecutingVisitor];
+}
+
+define pattern Visitor {
+    acceptors : module[];
+    visitor_base : module;
+    visitors : module[];
+
+    spec acceptors : [visitor_base] {
+        + visitor_base accept(visitor_base*);
+    }
+
+    spec visitor_base : [acceptors] {
+        for a in [acceptors] : {
+            +@ a <visit_{a}>(a*);
+        }
+    }
+
+    spec visitors < visitor_base : [acceptors, visitor_base] {
+        for a in [acceptors] : {
+            + a <visit_{a}>(a*);
+        }
+    }
+}
+
+define pattern Singleton {
+    singleton : module;
+
+    spec singleton : {
+        +$ singleton GetInstance();
+    }
+}

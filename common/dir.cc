@@ -23,10 +23,17 @@ void NodeGenVisitor::visit_module_list(ModuleList* module_list)
 
 void NodeGenVisitor::visit_module(Module* module)
 {
-    stream << module->name << " [label=\"" << module->name;
+    stream << module->name << " [label=\"" << module->name << "|";
     for (Method*& method : module->methods) {
-        stream << "\n";
         method->print(stream);
+        stream << "\\l";
+    }
+    if (module->patterns.size() > 0) {
+        stream << "|";
+    }
+    for (PatternInstance* pattern : module->patterns) {
+        pattern->print(stream);
+        stream << "\\l";
     }
     stream << "\"];" << endl;
 }
@@ -124,7 +131,7 @@ void Verifier::generate_graph_png(map<string, Module*> modules, string& file_pre
     dotfile
         << "digraph example {" << endl;
     dotfile << "rankdir=LR;" << endl;
-    dotfile << "node [shape=square];" << endl;
+    dotfile << "node [shape=record];" << endl;
 
     DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(dotfile);
 
