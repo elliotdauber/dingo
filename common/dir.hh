@@ -102,10 +102,25 @@ public:
             and args_equal;
     }
 
+    string escape_chars(string input)
+    {
+        string output;
+        for (char c : input) {
+            if (c == '<') {
+                output += "\\<";
+            } else if (c == '>') {
+                output += "\\>";
+            } else {
+                output += c;
+            }
+        }
+        return output;
+    }
+
     void print(ostream& stream)
     {
         stream << decorators;
-        stream << " " << ret_type->type << " " << name << "(";
+        stream << " " << ret_type->type << " " << escape_chars(name) << "(";
         for (size_t i = 0; i < args.size(); i++) {
             stream << args[i]->type;
             stream << args[i]->qualifiers;

@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <sstream>
 
 #include "dir.hh"
@@ -47,7 +48,9 @@ string cleanup_type(string type)
             break;
         }
     }
-    return type;
+
+    regex pattern("<.*?>");
+    return regex_replace(type, pattern, "");
 }
 
 string type_qualifiers(string type)
@@ -91,6 +94,7 @@ public:
 
         if (CXXRecordDecl* Class = dyn_cast<CXXRecordDecl>(f->getParent())) {
             string class_name = Class->getNameAsString();
+            cout << class_name << "::" << func_name << endl;
             if (modules_to_process.count(class_name)) {
                 if (!modules.count(class_name)) {
                     modules[class_name] = new DIR::Module(class_name);
@@ -218,7 +222,6 @@ public:
         }
 
         // cout << "Found class: " << class_name << endl;
-        ;
         if (!modules.count(class_name)) {
             modules[class_name] = new DIR::Module(class_name);
         }
@@ -247,6 +250,9 @@ public:
         // Iterate over the fields
         for (auto field = Decl->field_begin(); field != Decl->field_end(); ++field) {
             string field_type = cleanup_type(field->getType().getAsString());
+            if (class_name == "ShellStateMachine") {
+                cout << field_type << endl;
+            }
             add_dependency(field_type);
         }
         // }
