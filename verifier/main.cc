@@ -12,7 +12,12 @@ int main(int argc, char* argv[])
         orchestrator.lower();
         map<string, DIR::Module*> target_modules = orchestrator.get_modules();
 
-        map<string, DIR::Module*> tester_modules = parse(argv[2]);
+        set<string> modules_to_process;
+        for (auto it = target_modules.begin(); it != target_modules.end(); ++it) {
+            modules_to_process.insert(it->first);
+        }
+
+        map<string, DIR::Module*> tester_modules = parse(argv[2], modules_to_process);
 
         DIR::Verifier v;
         if (v.do_modules_conform(target_modules, tester_modules)) {

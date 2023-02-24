@@ -51,3 +51,5 @@ define pattern Singleton {
         +$ singleton GetInstance();
     }
 }
+
+module TestClass;

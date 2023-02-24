@@ -18,11 +18,12 @@
 #include "dir.hh"
 
 using namespace clang;
-using namespace clang::tooling;
+using namespace tooling;
 using namespace std;
 
 //TODO: this is a hack, find a better way
 map<string, DIR::Module*> global_modules;
+set<string> global_modules_to_process;
 
 string cleanup_type(string type)
 {
@@ -69,7 +70,11 @@ string type_qualifiers(string type)
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
-    void setContext(ASTContext& context) { astContext = &context; }
+    void init(ASTContext& context, set<string> mods_to_process)
+    {
+        modules_to_process = mods_to_process;
+        astContext = &context;
+    }
 
     bool isInMainFile(SourceLocation loc)
     {
@@ -79,17 +84,30 @@ public:
         return mainFileID == locFileID;
     }
 
+    //used for out-of-class function decls
+    bool VisitFunctionDecl(FunctionDecl* f)
+    {
+        string func_name = f->getNameAsString();
+
+        if (CXXRecordDecl* Class = dyn_cast<CXXRecordDecl>(f->getParent())) {
+            string class_name = Class->getNameAsString();
+            if (modules_to_process.count(class_name)) {
+                if (!modules.count(class_name)) {
+                    modules[class_name] = new DIR::Module(class_name);
+                }
+                curr_module = modules[class_name];
+            } else {
+                curr_module = nullptr;
+            }
+        } else {
+            curr_module = nullptr;
+        }
+        return true;
+    }
+
+    //custom function, used for class function decls
     bool MyVisitFunctionDecl(FunctionDecl* f)
     {
-        if (!isInMainFile(f->getSourceRange().getBegin())) {
-            return true;
-        }
-        // if (f->getBody() == nullptr) {
-        // if (!f->isThisDeclarationADefinition()) {
-        // cout << "in member function declaration!" << endl;
-        // Stmt* FuncBody = f->getBody();
-        //TODO: can we get number of statements to tell if its a declaration or implementation?
-
         string func_name = f->getNameAsString();
 
         // cout << "function name: " << func_name << endl;
@@ -132,7 +150,7 @@ public:
 
             //TODO: check this!
             AccessSpecifier access = f->getAccess();
-            std::string accessSpecifierString;
+            string accessSpecifierString;
             switch (access) {
             case AccessSpecifier::AS_public:
                 accessSpecifierString = "+";
@@ -187,10 +205,18 @@ public:
 
     bool VisitCXXRecordDecl(CXXRecordDecl* Decl)
     {
-        if (!isInMainFile(Decl->getSourceRange().getBegin()))
-            return true;
+        // if (!isInMainFile(Decl->getSourceRange().getBegin())) {
+        //     cout << "AYO!!!! " << Decl->getNameAsString() << endl;
+        //     return true;
+        // }
         // if (Decl->getDefinition()) {
         string class_name = Decl->getNameAsString();
+
+        if (!modules_to_process.count(class_name)) {
+            curr_module = nullptr;
+            return true;
+        }
+
         // cout << "Found class: " << class_name << endl;
         ;
         if (!modules.count(class_name)) {
@@ -229,8 +255,11 @@ public:
 
     bool VisitVarDecl(VarDecl* v)
     {
-        if (!isInMainFile(v->getSourceRange().getBegin()))
+        // if (!isInMainFile(v->getSourceRange().getBegin()))
+        //     return true;
+        if (curr_module == nullptr) {
             return true;
+        }
         // cout << "In variable decl: " << v->getNameAsString() << endl;
         QualType varType = v->getType();
         string var_type = cleanup_type(varType.getAsString());
@@ -244,8 +273,12 @@ public:
 
     bool VisitCXXConstructExpr(CXXConstructExpr* c)
     {
-        if (!isInMainFile(c->getSourceRange().getBegin()))
-            return false;
+        // if (!isInMainFile(c->getSourceRange().getBegin()))
+        //     return false;
+        if (curr_module == nullptr) {
+            return true;
+        }
+
         CXXConstructorDecl* constructor = c->getConstructor();
         CXXRecordDecl* record = constructor->getParent();
         if (record) {
@@ -258,8 +291,11 @@ public:
 
     bool VisitCXXMemberCallExpr(CXXMemberCallExpr* expr)
     {
-        if (!isInMainFile(expr->getSourceRange().getBegin()))
+        // if (!isInMainFile(expr->getSourceRange().getBegin()))
+        //     return true;
+        if (curr_module == nullptr) {
             return true;
+        }
         // Get the method being called
         CXXMethodDecl* methodDecl = expr->getMethodDecl();
 
@@ -296,6 +332,7 @@ public:
     DIR::Module* curr_module;
     map<string, DIR::Module*> modules;
     ASTContext* astContext;
+    set<string> modules_to_process;
 };
 
 class MyASTConsumer : public ASTConsumer {
@@ -307,7 +344,7 @@ public:
 
     virtual void HandleTranslationUnit(ASTContext& Context)
     {
-        Visitor.setContext(Context);
+        Visitor.init(Context, global_modules_to_process);
         Visitor.TraverseDecl(Context.getTranslationUnitDecl());
         global_modules = Visitor.modules;
     }
@@ -324,8 +361,9 @@ public:
     }
 };
 
-map<string, DIR::Module*> parse(const char* filename)
+map<string, DIR::Module*> parse(const char* filename, set<string> modules_to_process)
 {
+    global_modules_to_process = modules_to_process;
     llvm::cl::OptionCategory oc("my_option", "todo");
     int argc = 2;
     const char* argv[3] = { "bin/cppparser", filename, NULL };

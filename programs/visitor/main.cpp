@@ -1,3 +1,4 @@
+#include "myfile.hpp"
 #include <string.h>
 
 class Config {
@@ -62,5 +63,7 @@ void AddExpr::accept(IVisitor* v)
 
 int main()
 {
+    TestClass c;
+    c.test();
     return 0;
 }
