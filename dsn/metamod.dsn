@@ -1,0 +1,7 @@
+module MessageQueue;
+module NetworkInterface;
+module MessageTransporter : [MessageQueue, NetworkInterface];
+
+metamod NetworkStack {
+    MessageQueue, NetworkInterface, MessageTransporter
+};
