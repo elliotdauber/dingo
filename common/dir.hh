@@ -170,6 +170,8 @@ public:
     set<PatternInstance*> patterns;
     vector<Method*> methods;
 
+    vector<Method*> methods_with(char decorator);
+
     vector<DIR::Module*> get_modules() override { return { this }; }
     Kind kind() override { return Single; }
 
@@ -210,14 +212,23 @@ public:
     virtual void visit_module(Module* module) { }
 };
 
+class GraphContext {
+public:
+    string label;
+    string view_mode;
+};
+
 class NodeGenVisitor : public Visitor {
 public:
-    NodeGenVisitor(ostream& stream)
+    NodeGenVisitor(ostream& stream, GraphContext& context)
         : stream(stream)
+        , context(context)
     {
     }
     void visit_module_list(ModuleList* module_list) override;
     void visit_module(Module* module) override;
+
+    GraphContext context;
 
 private:
     ostream& stream;
@@ -241,7 +252,7 @@ public:
     //returns true if the tester is a valid implementation of target
     bool do_modules_conform(map<string, Module*> target, map<string, Module*> tester);
 
-    void generate_graph_png(map<string, Module*> modules, string& file_prefix);
+    void generate_graph_png(map<string, Module*> modules, GraphContext& context, string& output_file);
 };
 
 } //end namespace DIR

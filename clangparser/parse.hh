@@ -94,7 +94,7 @@ public:
 
         if (CXXRecordDecl* Class = dyn_cast<CXXRecordDecl>(f->getParent())) {
             string class_name = Class->getNameAsString();
-            cout << class_name << "::" << func_name << endl;
+            // cout << class_name << "::" << func_name << endl;
             if (modules_to_process.count(class_name)) {
                 if (!modules.count(class_name)) {
                     modules[class_name] = new DIR::Module(class_name);
@@ -249,10 +249,28 @@ public:
 
         // Iterate over the fields
         for (auto field = Decl->field_begin(); field != Decl->field_end(); ++field) {
+            // string field_type = cleanup_type(field->getType().getAsString());
+            // if (class_name == "Server") {
+            //     cout << field->getType().getAsString() << " Server::" << field->getNameAsString() << endl;
+            // }
+            // add_dependency(field_type);
+
             string field_type = cleanup_type(field->getType().getAsString());
-            if (class_name == "ShellStateMachine") {
-                cout << field_type << endl;
+            if (class_name == "Server") {
+                // if (field->getType()->isDependentType()) {
+                //     // This field is a template class, so get its name
+                //     string template_name = field->getType()->getAsCXXRecordDecl()->getNameAsString();
+                //     cout << "Template class field: " << template_name << " " << field->getNameAsString() << endl;
+                // } else {
+                //     // This field is not a template class
+                //     cout << "Non-template class field: " << field_type << " " << field->getNameAsString() << endl;
+                // }
+                cout << field->getType().getAsString() << " Server::" << field->getNameAsString() << endl;
+                const TemplateSpecializationType* TST = dyn_cast<TemplateSpecializationType>(field->getType().getTypePtr());
+                if (TST)
+                    cout << "TST!" << endl;
             }
+
             add_dependency(field_type);
         }
         // }
@@ -367,12 +385,12 @@ public:
     }
 };
 
-map<string, DIR::Module*> parse(const char* filename, set<string> modules_to_process)
+map<string, DIR::Module*> parse(string filename, set<string> modules_to_process)
 {
     global_modules_to_process = modules_to_process;
     llvm::cl::OptionCategory oc("my_option", "todo");
     int argc = 2;
-    const char* argv[3] = { "bin/cppparser", filename, NULL };
+    const char* argv[3] = { "bin/cppparser", filename.c_str(), NULL };
     llvm::Expected<CommonOptionsParser> OptionsParser = CommonOptionsParser::create(argc, argv, oc);
     ClangTool Tool((*OptionsParser).getCompilations(),
         (*OptionsParser).getSourcePathList());

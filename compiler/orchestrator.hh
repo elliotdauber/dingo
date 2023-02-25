@@ -24,7 +24,7 @@ public:
     * parse - parse from a file
     * @param filename - valid string with input file
     */
-    void parse(const char* const filename);
+    void parse(string& filename);
     /** 
     * parse - parse from a c++ input stream
     * @param is - istream&, valid input stream

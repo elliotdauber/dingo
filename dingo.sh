@@ -1,0 +1,2 @@
+#bin/verifier -l RaftServer -v none -o raft_server.png ~/cs190/raft5/server/server.dsn ~/cs190/raft5/server/main.cpp
+bin/verifier -l RaftClient -v none -o raft_client.png ~/cs190/raft5/client/client.dsn ~/cs190/raft5/client/main.cpp

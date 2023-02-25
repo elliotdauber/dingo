@@ -9,6 +9,20 @@ void Module::accept(Visitor* v)
     v->visit_module(this);
 }
 
+vector<Method*> Module::methods_with(char decorator)
+{
+    vector<Method*> result;
+    for (Method* method : methods) {
+        for (char dec : method->decorators) {
+            if (dec == decorator) {
+                result.push_back(method);
+                break;
+            }
+        }
+    }
+    return result;
+}
+
 void ModuleList::accept(Visitor* v)
 {
     v->visit_module_list(this);
@@ -23,10 +37,20 @@ void NodeGenVisitor::visit_module_list(ModuleList* module_list)
 
 void NodeGenVisitor::visit_module(Module* module)
 {
-    stream << module->name << " [label=\"" << module->name << "|";
-    for (Method*& method : module->methods) {
-        method->print(stream);
-        stream << "\\l";
+    stream << module->name << " [label=\"" << module->name;
+    if (context.view_mode == "public" or context.view_mode == "all") {
+        stream << "|";
+        for (Method*& method : module->methods_with('+')) {
+            method->print(stream);
+            stream << "\\l";
+        }
+    }
+    if (context.view_mode == "private" or context.view_mode == "all") {
+        stream << "|";
+        for (Method*& method : module->methods_with('-')) {
+            method->print(stream);
+            stream << "\\l";
+        }
     }
     if (module->patterns.size() > 0) {
         stream << "|";
@@ -123,17 +147,16 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
     return true;
 }
 
-void Verifier::generate_graph_png(map<string, Module*> modules, string& file_prefix)
+void Verifier::generate_graph_png(map<string, Module*> modules, GraphContext& context, string& output_file)
 {
-    ostringstream dotfile_name;
-    dotfile_name << file_prefix << ".dot";
-    ofstream dotfile(dotfile_name.str());
+    string dotfile_name = "intermediate.dingo.dot";
+    ofstream dotfile(dotfile_name);
     dotfile
         << "digraph example {" << endl;
     dotfile << "rankdir=LR;" << endl;
     dotfile << "node [shape=record];" << endl;
 
-    DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(dotfile);
+    DIR::NodeGenVisitor* node_gen = new DIR::NodeGenVisitor(dotfile, context);
 
     for (auto it = modules.begin(); it != modules.end(); ++it) {
         it->second->accept(node_gen);
@@ -147,18 +170,16 @@ void Verifier::generate_graph_png(map<string, Module*> modules, string& file_pre
         it->second->accept(edge_gen);
     }
 
-    dotfile << "label=\"The System\"" << endl;
+    dotfile << "label=\"" << context.label << "\"" << endl;
     dotfile << "style=filled" << endl;
     dotfile << "fillcolor=yellow" << endl;
     dotfile << "}" << endl;
 
     dotfile.close();
 
-    ostringstream png_name;
-    png_name << file_prefix << ".png";
-
     ostringstream oss;
-    oss << "dot -Tpng " << dotfile_name.str() << " > " << png_name.str();
+    oss << "dot -Tpng " << dotfile_name << " > " << output_file << ";"
+        << " rm " << dotfile_name;
     FILE* fp = popen(oss.str().c_str(), "r");
 
     char buffer[256];

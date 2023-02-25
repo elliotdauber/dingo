@@ -14,9 +14,8 @@ DSN::Orchestrator::~Orchestrator()
     parser = nullptr;
 }
 
-void DSN::Orchestrator::parse(const char* const filename)
+void DSN::Orchestrator::parse(string& filename)
 {
-    assert(filename != nullptr);
     std::ifstream in_file(filename);
     if (!in_file.good()) {
         cout << "bad file in Orchestrator::parse" << endl;
@@ -77,8 +76,11 @@ std::ostream&
 DSN::Orchestrator::print(std::ostream& stream)
 {
     DIR::Verifier v;
-    string file_prefix = "compiler_main";
-    v.generate_graph_png(get_modules(), file_prefix);
+    DIR::GraphContext context;
+    context.label = "compiler main";
+    context.view_mode = "all";
+    string output_file = "compiler_main.png";
+    v.generate_graph_png(get_modules(), context, output_file);
 
     for (auto outer_it = modules.begin(); outer_it != modules.end(); ++outer_it) {
         string name = outer_it->first;

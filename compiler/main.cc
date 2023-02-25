@@ -12,7 +12,8 @@ int main(int argc, char* argv[])
 {
     if (argc >= 2) {
         DSN::Orchestrator orchestrator;
-        orchestrator.parse(argv[1]);
+        string filename = string(argv[1]);
+        orchestrator.parse(filename);
         //TODO: return if parse failed
         orchestrator.lower();
 
