@@ -1,4 +1,5 @@
 #include "dir.hh"
+#include "log.hh"
 #include <fstream>
 #include <sstream>
 
@@ -38,14 +39,14 @@ void NodeGenVisitor::visit_module_list(ModuleList* module_list)
 void NodeGenVisitor::visit_module(Module* module)
 {
     stream << module->name << " [label=\"" << module->name;
-    if (context.view_mode == "public" or context.view_mode == "all") {
+    if (context.interface == "public" or context.interface == "all") {
         stream << "|";
         for (Method*& method : module->methods_with('+')) {
             method->print(stream);
             stream << "\\l";
         }
     }
-    if (context.view_mode == "private" or context.view_mode == "all") {
+    if (context.interface == "private" or context.interface == "all") {
         stream << "|";
         for (Method*& method : module->methods_with('-')) {
             method->print(stream);
@@ -88,7 +89,7 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
         string module_name = module_it->first;
         Module* tester_module = module_it->second;
         if (!target.count(module_name)) {
-            cout << "Warning: Module " << module_name << " was defined in code, but not in Dingo." << endl;
+            Logger(WARNING) << "Warning: Module " << module_name << " was defined in code, but not in Dingo.\n";
             continue;
         }
         Module* target_module = target[module_name];
@@ -98,7 +99,7 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
                 return p->name == dependency_name;
             });
             if (find_it == target_module->dependencies.end()) {
-                cerr << "Error: In the code, the module " << module_name << " has a dependency on " << dependency_name << ", but this was not specified in the Dingofile." << endl;
+                Logger(ERROR) << "Error: In the code, the module " << module_name << " has a dependency on " << dependency_name << ", but this was not specified in the Dingofile.\n";
                 return false;
             }
         }
@@ -109,7 +110,7 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
                 return p->name == parent_name;
             });
             if (find_it == target_module->parents.end()) {
-                cerr << "Error: In the target code, the module " << module_name << " has parent " << parent_name << ", but this was not specified in the Dingofile." << endl;
+                Logger(ERROR) << "Error: In the target code, the module " << module_name << " has parent " << parent_name << ", but this was not specified in the Dingofile.\n";
                 return false;
             }
         }
@@ -119,7 +120,7 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
         string module_name = module_it->first;
         Module* target_module = module_it->second;
         if (!tester.count(module_name)) {
-            cout << "Warning: Module " << module_name << " was defined in  Dingo, but not in code." << endl;
+            Logger(WARNING) << "Warning: Module " << module_name << " was defined in the Dingofile, but not in code.\n";
             continue;
         }
         Module* tester_module = tester[module_name];
@@ -129,7 +130,7 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
                 return p->name == dependency_name;
             });
             if (find_it == tester_module->dependencies.end()) {
-                cerr << "Warning: In the Dingofile, the module " << module_name << " has a dependency on " << dependency_name << ", but this is not used in the code." << endl;
+                Logger(WARNING) << "Warning: In the Dingofile, the module " << module_name << " has a dependency on " << dependency_name << ", but this is not used in the code.\n";
             }
         }
 
@@ -139,7 +140,7 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
                 return p->name == parent_name;
             });
             if (find_it == tester_module->parents.end()) {
-                cerr << "Error: In the Dingofile, the module " << module_name << " has parent " << parent_name << ", but this is not true in the code" << endl;
+                Logger(ERROR) << "Error: In the Dingofile, the module " << module_name << " has parent " << parent_name << ", but this is not true in the code\n";
                 return false;
             }
         }

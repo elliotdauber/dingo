@@ -216,6 +216,7 @@ class GraphContext {
 public:
     string label;
     string view_mode;
+    string interface;
 };
 
 class NodeGenVisitor : public Visitor {

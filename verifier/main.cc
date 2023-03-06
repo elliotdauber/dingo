@@ -3,6 +3,7 @@
 #include "parse.hh"
 #include <iostream>
 
+#include "log.hh"
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -10,7 +11,7 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[])
 {
     po::options_description desc("Allowed options");
-    desc.add_options()("help,h", "print help message")("view,v", po::value<string>()->default_value("public"), "view mode (public, private, all, none)")("output,o", po::value<string>()->default_value("output.png"), "output png filepath")("label,l", po::value<string>()->default_value(""), "Graph label")("dingofile,d", po::value<string>(), "Dingofile filepath")("source-file,s", po::value<string>(), "Source filepath");
+    desc.add_options()("help,h", "print help message")("interface,i", po::value<string>()->default_value("public"), "interface (public, private, all, none)")("view,v", po::value<string>()->default_value("ideal"), "view mode (ideal, real, none)")("output,o", po::value<string>()->default_value("output.png"), "output png filepath")("label,l", po::value<string>()->default_value(""), "Graph label")("dingofile,d", po::value<string>(), "Dingofile filepath")("source-file,s", po::value<string>(), "Source filepath");
 
     po::positional_options_description p;
     p.add("dingofile", 1);
@@ -31,8 +32,10 @@ int main(int argc, char* argv[])
 
     DIR::GraphContext context = DIR::GraphContext();
     context.label = vm["label"].as<string>();
+    context.interface = vm["interface"].as<string>();
     context.view_mode = vm["view"].as<string>();
 
+    cout << "Interface: " << context.interface << "\n";
     cout << "View mode: " << context.view_mode << "\n";
     cout << "Output file: " << output_file << "\n";
     cout << "Label: " << context.label << "\n";
@@ -54,16 +57,17 @@ int main(int argc, char* argv[])
 
     DIR::Verifier v;
     if (v.do_modules_conform(target_modules, tester_modules)) {
-        cout << "Success: everything looks good!" << endl;
+        Logger(SUCCESS) << "Success: everything looks good!\n";
     } else {
-        cout << "Failure: check the errors" << endl;
+        Logger(ERROR) << "Failure: check the errors\n";
     }
 
-    // string dingofile_prefix = "verifier_dingofile";
-    // string codefile_prefix = "verifier_codefile";
-    // v.generate_graph_png(target_modules, dingofile_prefix);
-    // v.generate_graph_png(tester_modules, codefile_prefix);
-
-    v.generate_graph_png(tester_modules, context, output_file);
+    if (context.view_mode == "ideal") {
+        v.generate_graph_png(target_modules, context, output_file);
+    } else if (context.view_mode == "real") {
+        v.generate_graph_png(tester_modules, context, output_file);
+    } else if (context.view_mode != "none") {
+        Logger(WARNING) << "Warning: Unrecognized option set for --view, not generating a graph\n";
+    }
     return 0;
 }

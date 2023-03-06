@@ -5,3 +5,5 @@ module MessageTransporter : [MessageQueue, NetworkInterface];
 metamod NetworkStack {
     MessageQueue, NetworkInterface, MessageTransporter
 };
+
+dingo -l High -l Low -m NetworkStack

@@ -29,9 +29,9 @@ string cleanup_type(string type)
         }
     }
 
-    regex pattern("<.*?>");
-    return regex_replace(type, pattern, "");
-    // return type;
+    // regex pattern("<.*?>");
+    // return regex_replace(type, pattern, "");
+    return type;
 }
 
 vector<string> get_all_types(string type)
@@ -64,6 +64,7 @@ vector<string> get_all_types(string type)
     if (pos == string::npos) {
         return { type };
     }
+    // cout << "in template type: " << type << endl;
 
     // Extract class name
     string class_name = type.substr(0, pos);
@@ -242,24 +243,13 @@ bool MyASTVisitor::MyVisitFunctionDecl(FunctionDecl* f)
         curr_module->methods.push_back(method);
     } else {
         // This is not a member function
-        // cout << "function " << f->getNameAsString()
-        //  << " is not a member function" << endl;
         curr_module = nullptr;
     }
-    // }
-    // else {
-    //     cout << "in function implementation" << endl;
-    // }
     return true;
 }
 
 bool MyASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
 {
-    // if (!isInMainFile(Decl->getSourceRange().getBegin())) {
-    //     cout << "AYO!!!! " << Decl->getNameAsString() << endl;
-    //     return true;
-    // }
-    // if (Decl->getDefinition()) {
     string class_name = Decl->getNameAsString();
 
     if (!modules_to_process.count(class_name)) {
@@ -267,7 +257,6 @@ bool MyASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
         return true;
     }
 
-    // cout << "Found class: " << class_name << endl;
     if (!modules.count(class_name)) {
         modules[class_name] = new DIR::Module(class_name);
     }
@@ -296,30 +285,13 @@ bool MyASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
     // Iterate over the fields
     for (auto field = Decl->field_begin(); field != Decl->field_end(); ++field) {
         string field_type = cleanup_type(field->getType().getAsString());
-        // if (class_name == "Server") {
-        //     cout << field->getType().getAsString() << " Server::" << field->getNameAsString() << endl;
+        // if (class_name == "NetworkInterface") {
+        //     cout << field->getType().getAsString() << endl;
+        //     cout << field->getNameAsString() << endl;
+        //     cout << field_type << endl;
         // }
         add_dependency(field->getType().getAsString());
-
-        // string field_type = cleanup_type(field->getType().getAsString());
-        // if (class_name == "Server") {
-        //     // if (field->getType()->isDependentType()) {
-        //     //     // This field is a template class, so get its name
-        //     //     string template_name = field->getType()->getAsCXXRecordDecl()->getNameAsString();
-        //     //     cout << "Template class field: " << template_name << " " << field->getNameAsString() << endl;
-        //     // } else {
-        //     //     // This field is not a template class
-        //     //     cout << "Non-template class field: " << field_type << " " << field->getNameAsString() << endl;
-        //     // }
-        //     cout << field->getType().getAsString() << " Server::" << field->getNameAsString() << endl;
-        //     const TemplateSpecializationType* TST = dyn_cast<TemplateSpecializationType>(field->getType().getTypePtr());
-        //     if (TST)
-        //         cout << "TST!" << endl;
-        // }
-
-        // add_dependency(field_type);
     }
-    // }
     return true;
 }
 
@@ -405,7 +377,7 @@ void MyASTConsumer::HandleTranslationUnit(ASTContext& Context)
 map<string, DIR::Module*> parse(string filename, set<string> modules_to_process)
 {
     global_modules_to_process = modules_to_process;
-    llvm::cl::OptionCategory oc("my_option", "todo");
+    llvm::cl::OptionCategory oc("todo", "todo");
     int argc = 2;
     const char* argv[3] = { "bin/cppparser", filename.c_str(), NULL };
     llvm::Expected<CommonOptionsParser> OptionsParser = CommonOptionsParser::create(argc, argv, oc);
