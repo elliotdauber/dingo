@@ -54,7 +54,7 @@ module ShapeFactory;
 module CircleFactory < ShapeFactory : [Circle];
 module SquareFactory < ShapeFactory : [Square];
 
-apply pattern AbstractFactory {
+apply pattern AbstractFactory as AF {
     factory_base: ShapeFactory;
     factories: [CircleFactory, SquareFactory];
     product_base: Shape;
@@ -62,11 +62,11 @@ apply pattern AbstractFactory {
 
 module Config;
 
-apply pattern Singleton {
+apply pattern Singleton as Confingleton {
     singleton: Config;
 }
 
-apply pattern Singleton {
+apply pattern Singleton as StateMachingleton {
     singleton : StateMachine;
 }
 
@@ -81,7 +81,7 @@ module BadState < IState : {
     + StateMachine hi();
 }
 
-apply pattern State {
+apply pattern State as StateMachineState {
     context : StateMachine;
     state_base: IState;
 }
@@ -100,7 +100,7 @@ module AddExpr : [Config, IExpr] {
 
 module NumExpr;
 
-apply pattern Visitor {
+apply pattern Visitor as ExprVisitor {
     acceptors: [IExpr, AddExpr, NumExpr];
     visitor_base: IVisitor;
 }

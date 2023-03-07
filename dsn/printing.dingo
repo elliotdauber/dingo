@@ -9,7 +9,7 @@ define pattern Singleton {
 module PrinterConfig;
 module Config;
 
-apply pattern Singleton {
+apply pattern Singleton as Confingleton {
     singleton : Config;
 }
 

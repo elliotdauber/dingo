@@ -1,6 +1,6 @@
 define pattern MyPattern {
-    hi : module;
-    hey : module[];
+    hi: module;
+    hey: module[];
 
     spec hi : [] {
         +$@ void mymeth();
@@ -41,10 +41,10 @@ module MyMod < Ye;
 module MyOtherMod < Ye : [MyMod, Ye];
 
 apply pattern MyPattern {
-    hi : MyMod;
+    hi: MyMod;
 }
 
 apply pattern Visitor {
-    acceptors : [Ye, MyMod];
-    visitor_base : MyOtherMod;
+    acceptors: [Ye, MyMod];
+    visitor_base: MyOtherMod;
 }

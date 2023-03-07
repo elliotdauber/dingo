@@ -1,6 +1,6 @@
 define pattern Visitor {
-    acceptors : module[];
-    visitor_base : module;
+    acceptors: module[];
+    visitor_base: module;
 
     spec acceptors : [visitor_base] {
         + visitor_base accept(visitor_base*);

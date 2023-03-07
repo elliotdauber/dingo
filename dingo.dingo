@@ -1,7 +1,7 @@
 define pattern PVisitor {
-    acceptors : module[];
-    visitor_base : module;
-    visitors : module[];
+    acceptors: module[];
+    visitor_base: module;
+    visitors: module[];
 
     spec acceptors : [visitor_base] {
         + visitor_base accept(visitor_base*);
@@ -20,17 +20,17 @@ define pattern PVisitor {
     }
 }
 
-module DIR::Visitor;
-module DIR::NodeGenVisitor;
-module DIR::EdgeGenVisitor;
-module DIR::GraphContext;
+module Visitor;
+module NodeGenVisitor;
+module EdgeGenVisitor;
+module GraphContext;
 
 apply pattern PVisitor as VerifierVisitor {
     acceptors: [PatternDefinition];
-    visitor_base: DIR::Visitor;
-    visitors: [DIR::NodeGenVisitor, DIR::EdgeGenVisitor];
+    visitor_base: Visitor;
+    visitors: [NodeGenVisitor, EdgeGenVisitor];
 }
-module DIR::Verifier : [DIR::EdgeGenVisitor, DIR::NodeGenVisitor, DIR::GraphContext];
+module Verifier : [EdgeGenVisitor, NodeGenVisitor, GraphContext];
 
 module ProgramNode;
 module PatternDefinition < ProgramNode;

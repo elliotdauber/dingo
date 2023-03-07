@@ -1,0 +1,25 @@
+{
+  "name": "dingo",
+  "displayName": "Dingo",
+  "description": "Syntax highlighting for Dingo",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.76.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "dingo",
+      "aliases": ["Dingo", "dingo"],
+      "extensions": [".dingo"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "dingo",
+      "scopeName": "source.dingo",
+      "path": "./syntaxes/dingo.tmLanguage.json"
+    }]
+  }
+}

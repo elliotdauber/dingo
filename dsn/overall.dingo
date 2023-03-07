@@ -39,14 +39,14 @@ module FollowerImpl < ServerImpl : [Config] {
     }
 }
 
-apply pattern Singleton {
+apply pattern Singleton as Confingleton {
     singleton : Config;
 }
 
 module IVisitor;
 module IExpr;
 
-apply pattern Visitor {
+apply pattern Visitor as Vis {
     acceptors: [IExpr];
     visitor_base: IVisitor;
 }

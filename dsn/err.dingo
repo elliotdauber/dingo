@@ -6,7 +6,7 @@ define pattern BadPattern {
     mul_fields: module[];
 }
 
-apply pattern BadPattern {
+apply pattern BadPattern as Bad {
     a_field: MyModule;
     mul_fields: [MyModule];
 }
