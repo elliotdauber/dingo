@@ -16,6 +16,17 @@ class ProgramNode {
 };
 
 ///////////////////////////////
+//           Import          //
+///////////////////////////////
+
+class ImportStmt : ProgramNode {
+public:
+    ImportStmt(string filepath);
+    void accept(Visitor* v) override;
+    string filepath;
+};
+
+///////////////////////////////
 //           Module          //
 ///////////////////////////////
 
@@ -247,9 +258,10 @@ public:
 
 class PatternApplication : public ProgramNode {
 public:
-    PatternApplication(string name, MemberAssignmentList* member_assignments);
+    PatternApplication(string pattern_name, string canonical_name, MemberAssignmentList* member_assignments);
     void accept(Visitor* v) override;
-    string name;
+    string pattern_name;
+    string canonical_name;
     MemberAssignmentList* member_assignments;
 };
 

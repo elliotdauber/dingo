@@ -112,13 +112,13 @@ string type_qualifiers(string type)
     return qualifiers_str;
 }
 
-void MyASTVisitor::init(ASTContext& context, set<string> mods_to_process)
+void DingoCppASTVisitor::init(ASTContext& context, set<string> mods_to_process)
 {
     modules_to_process = mods_to_process;
     astContext = &context;
 }
 
-bool MyASTVisitor::isInMainFile(SourceLocation loc)
+bool DingoCppASTVisitor::isInMainFile(SourceLocation loc)
 {
     SourceManager& SM = astContext->getSourceManager();
     FileID mainFileID = SM.getMainFileID();
@@ -127,7 +127,7 @@ bool MyASTVisitor::isInMainFile(SourceLocation loc)
 }
 
 //used for out-of-class function decls
-bool MyASTVisitor::VisitFunctionDecl(FunctionDecl* f)
+bool DingoCppASTVisitor::VisitFunctionDecl(FunctionDecl* f)
 {
     string func_name = f->getNameAsString();
 
@@ -148,7 +148,7 @@ bool MyASTVisitor::VisitFunctionDecl(FunctionDecl* f)
     return true;
 }
 
-bool MyASTVisitor::VisitDeclRefExpr(DeclRefExpr* expr)
+bool DingoCppASTVisitor::VisitDeclRefExpr(DeclRefExpr* expr)
 {
     //TODO: finish this (e.g. raft Server class should see Message*)
     QualType type = expr->getType();
@@ -157,7 +157,7 @@ bool MyASTVisitor::VisitDeclRefExpr(DeclRefExpr* expr)
 }
 
 //custom function, used for class function decls
-bool MyASTVisitor::MyVisitFunctionDecl(FunctionDecl* f)
+bool DingoCppASTVisitor::MyVisitFunctionDecl(FunctionDecl* f)
 {
     string func_name = f->getNameAsString();
 
@@ -248,7 +248,7 @@ bool MyASTVisitor::MyVisitFunctionDecl(FunctionDecl* f)
     return true;
 }
 
-bool MyASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
+bool DingoCppASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
 {
     string class_name = Decl->getNameAsString();
 
@@ -295,7 +295,7 @@ bool MyASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
     return true;
 }
 
-bool MyASTVisitor::VisitVarDecl(VarDecl* v)
+bool DingoCppASTVisitor::VisitVarDecl(VarDecl* v)
 {
     // if (!isInMainFile(v->getSourceRange().getBegin()))
     //     return true;
@@ -313,7 +313,7 @@ bool MyASTVisitor::VisitVarDecl(VarDecl* v)
     return true;
 }
 
-bool MyASTVisitor::VisitCXXConstructExpr(CXXConstructExpr* c)
+bool DingoCppASTVisitor::VisitCXXConstructExpr(CXXConstructExpr* c)
 {
     // if (!isInMainFile(c->getSourceRange().getBegin()))
     //     return false;
@@ -331,7 +331,7 @@ bool MyASTVisitor::VisitCXXConstructExpr(CXXConstructExpr* c)
     return true;
 }
 
-bool MyASTVisitor::VisitCXXMemberCallExpr(CXXMemberCallExpr* expr)
+bool DingoCppASTVisitor::VisitCXXMemberCallExpr(CXXMemberCallExpr* expr)
 {
     // if (!isInMainFile(expr->getSourceRange().getBegin()))
     //     return true;
@@ -352,7 +352,7 @@ bool MyASTVisitor::VisitCXXMemberCallExpr(CXXMemberCallExpr* expr)
     return true;
 }
 
-void MyASTVisitor::add_dependency(string dependency_name)
+void DingoCppASTVisitor::add_dependency(string dependency_name)
 {
     if (curr_module == nullptr
         or curr_module->name == dependency_name) {
@@ -367,7 +367,7 @@ void MyASTVisitor::add_dependency(string dependency_name)
     }
 }
 
-void MyASTConsumer::HandleTranslationUnit(ASTContext& Context)
+void DingoCppASTConsumer::HandleTranslationUnit(ASTContext& Context)
 {
     Visitor.init(Context, global_modules_to_process);
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
@@ -383,7 +383,7 @@ map<string, DIR::Module*> parse(string filename, set<string> modules_to_process)
     llvm::Expected<CommonOptionsParser> OptionsParser = CommonOptionsParser::create(argc, argv, oc);
     ClangTool Tool((*OptionsParser).getCompilations(),
         (*OptionsParser).getSourcePathList());
-    unique_ptr<FrontendActionFactory> action_factory = newFrontendActionFactory<MyFrontendAction>();
+    unique_ptr<FrontendActionFactory> action_factory = newFrontendActionFactory<DingoCppFrontendAction>();
     Tool.run(action_factory.get());
     return global_modules;
 }

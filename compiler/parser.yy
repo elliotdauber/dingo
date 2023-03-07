@@ -37,6 +37,7 @@
    class PatternDefinition;
    class PatternApplication;
    class Type;
+   class ImportStmt;
 
 
 // The following definitions is missing when %locations isn't used
@@ -76,6 +77,7 @@
 
 %token               END    0     "end of file"
 %token <std::string> ID
+%token <std::string> FILEPATH
 %token <std::string> STENCILED_ID
 %token <std::string> DECORATOR 
 %token <std::string> QUALIFIERS
@@ -96,6 +98,8 @@
 %token               LESSTHAN
 %token               COLON
 %token               COMMA
+%token               IMPORT
+%token               AS
 
 %locations
 
@@ -128,15 +132,20 @@
 %type <PatternDefinition*> pattern_definition
 %type <PatternApplication*> pattern_application
 
+%type <ImportStmt*> import_stmt
+
 %%
 
 program_option : END | program END;
 
 program : declaration | program declaration;
 
+import_stmt : IMPORT FILEPATH SEMICOLON {orchestrator.parse($2);};
+
 declaration : pattern_definition {orchestrator.add_pattern_defn($1); }
             | pattern_application {orchestrator.add_pattern_appl($1); }
-            | module_decl { orchestrator.add_module_decl($1); };
+            | module_decl { orchestrator.add_module_decl($1); }
+            | import_stmt {};
 
 pattern_definition : DEFINE PATTERN ID LBRACKET pattern_member_decls pattern_spec_decls RBRACKET {$$ = new PatternDefinition($3, $5, $6);};
 
@@ -160,7 +169,7 @@ single_type : MODULE {$$ = "module";};
 
 
 
-pattern_application : APPLY PATTERN ID LBRACKET pattern_member_assignments RBRACKET {$$ = new PatternApplication($3, $5);};
+pattern_application : APPLY PATTERN ID AS ID LBRACKET pattern_member_assignments RBRACKET {$$ = new PatternApplication($3, $5, $7);};
 
 pattern_member_assignments : %empty {$$ = new MemberAssignmentList(); }
                 | pattern_member_assignment pattern_member_assignments {$$ = new MemberAssignmentList($2, $1);};

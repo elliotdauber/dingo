@@ -12,17 +12,3 @@ define pattern Visitor {
         }
     }
 }
-
-module Config;
-
-module IExpr;
-module AddExpr < IExpr : [Config];
-module NumExpr < IExpr : [Config];
-
-module IVisitor;
-module PrinterVisitor;
-
-apply pattern Visitor {
-    acceptors: [AddExpr, NumExpr];
-    visitor_base: IVisitor;
-}

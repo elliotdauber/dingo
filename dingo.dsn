@@ -1,0 +1,34 @@
+define pattern Visitor {
+    acceptors : module[];
+    visitor_base : module;
+    visitors : module[];
+
+    spec acceptors : [visitor_base] {
+        + visitor_base accept(visitor_base*);
+    }
+
+    spec visitor_base : [acceptors] {
+        for a in [acceptors] : {
+            +@ a <visit_{a}>(a*);
+        }
+    }
+
+    spec visitors < Visitor : [acceptors] {
+        for a in [acceptors] : {
+            + a <visit_{a}>(a*);
+        }
+    }
+}
+
+module Visitor;
+module NodeGenVisitor;
+module EdgeGenVisitor;
+
+apply pattern Visitor as the_visitor {
+    acceptors: [PatternDefinition];
+    visitor_base: Visitor;
+    visitors: [NodeGenVisitor, EdgeGenVisitor];
+}
+module ProgramNode;
+module PatternDefinition < ProgramNode;
+module Verifier : [EdgeGenVisitor, NodeGenVisitor];

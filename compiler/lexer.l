@@ -47,6 +47,10 @@ using token = DSN::Parser::token;
 
 "in"            {return(token::IN);}
 
+"import"        {return(token::IMPORT);}
+
+"as"            {return(token::AS);}
+
 \<((\{[a-zA-Z_]+\})|[a-zA-Z])([a-zA-Z_]*(\{[a-zA-Z_]+\})*)*\> {
    yylval->build< std::string >( yytext );
    return( token::STENCILED_ID );
@@ -55,6 +59,11 @@ using token = DSN::Parser::token;
 [a-zA-Z_]*   {
                yylval->build< std::string >( yytext );
                return( token::ID );
+             }
+
+[a-zA-Z0-9_\/\.\-]+   {
+               yylval->build< std::string >( yytext );
+               return( token::FILEPATH );
              }
 
 [\-\+\@\$]  {

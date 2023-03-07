@@ -226,20 +226,20 @@ void ModuleUpdaterVisitor::visit_for_each(ForEach* foreach)
 
 void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
 {
-    string name = pattern_appl->name;
-    if (!pattern_defns.count(name)) {
-        cerr << "Attempting to apply an undeclared pattern: " << name << endl;
+    string pattern_name = pattern_appl->pattern_name;
+    if (!pattern_defns.count(pattern_name)) {
+        cerr << "Attempting to apply an undeclared pattern: " << pattern_name << endl;
         exit(1);
     }
-    DIR::Pattern* pat = new DIR::Pattern(name);
-    DIR::PatternInstance* pat_instance = new DIR::PatternInstance(pat, num_patterns_applied++);
+    DIR::Pattern* pat = new DIR::Pattern(pattern_name);
+    DIR::PatternInstance* pat_instance = new DIR::PatternInstance(pat, pattern_appl->canonical_name);
     PatternDefinition* pattern_defn
-        = pattern_defns[name];
+        = pattern_defns[pattern_name];
 
     size_t defn_num_members = pattern_defn->members->items.size();
     size_t appl_num_members = pattern_appl->member_assignments->items.size();
     if (appl_num_members != defn_num_members) {
-        cerr << "Attemping to apply pattern, but got the incorrect number of member assignments: Pattern " << name << " contains " << defn_num_members << " members, but application tried to assign " << appl_num_members << " members. " << endl;
+        cerr << "Attemping to apply pattern, but got the incorrect number of member assignments: Pattern " << pattern_name << " contains " << defn_num_members << " members, but application tried to assign " << appl_num_members << " members. " << endl;
         exit(1);
     }
 
@@ -249,14 +249,14 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
         Member* defn_member = pattern_defn->members->find(member_name);
 
         if (defn_member == nullptr) {
-            cerr << "Tried to assign to the member " << member_name << " in an application of the pattern " << name << ", but this member does not exist on the pattern." << endl;
+            cerr << "Tried to assign to the member " << member_name << " in an application of the pattern " << pattern_name << ", but this member does not exist on the pattern." << endl;
             exit(1);
         }
 
         Type* defn_member_type = defn_member->type;
         Type* member_assignment_type = assignment->assignment->type;
         if (!(*defn_member_type == *member_assignment_type)) {
-            cerr << "Type error: The type of field " << member_name << " in the application of the pattern " << name << " is wrong. The type should be " << defn_member_type->str() << ", but is " << member_assignment_type->str() << "." << endl;
+            cerr << "Type error: The type of field " << member_name << " in the application of the pattern " << pattern_name << " is wrong. The type should be " << defn_member_type->str() << ", but is " << member_assignment_type->str() << "." << endl;
             exit(1);
         }
 
@@ -267,7 +267,7 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
 
             for (size_t k = 0; k < assignment_modules.size(); k++) {
                 if (!modules.count(assignment_modules[k]->name)) {
-                    cerr << "Tried to apply pattern with module " << assignment_modules[k]->name << " for pattern " << pattern_appl->name << ", field " << member_name << ", but this module does not exist." << endl;
+                    cerr << "Tried to apply pattern with module " << assignment_modules[k]->name << " for pattern " << pattern_appl->pattern_name << ", field " << member_name << ", but this module does not exist." << endl;
                     exit(1);
                 }
                 DIR::ModuleComposite* composite = modules[assignment_modules[k]->name];
@@ -279,7 +279,7 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
         } else {
             //TODO: is this guaranteed to be safe?
             if (!modules.count(assignment_modules[0]->name)) {
-                cerr << "Tried to apply pattern with module " << assignment_modules[0]->name << " for pattern " << pattern_appl->name << ", field " << member_name << ", but this module does not exist." << endl;
+                cerr << "Tried to apply pattern with module " << assignment_modules[0]->name << " for pattern " << pattern_appl->pattern_name << ", field " << member_name << ", but this module does not exist." << endl;
                 exit(1);
             }
             modules[defn_member->name] = modules[assignment_modules[0]->name];
@@ -294,7 +294,7 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
     SpecList* specs = pattern_defn->specs;
 
     if (specs->items.size() > appl_num_members) {
-        cerr << "Too many specs defined for pattern " << name << ". Expected at most " << appl_num_members << ", but received " << specs->items.size() << "." << endl;
+        cerr << "Too many specs defined for pattern " << pattern_name << ". Expected at most " << appl_num_members << ", but received " << specs->items.size() << "." << endl;
     }
 
     ModuleUpdaterVisitor* module_updater = new ModuleUpdaterVisitor(modules);
@@ -305,7 +305,7 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
 
         //TODO: use modules here? or something more specific?
         if (!modules.count(spec_name)) {
-            cerr << "In pattern " << name << ", defined a spec for " << spec_name << ", but this is not a defined member." << endl;
+            cerr << "In pattern " << pattern_name << ", defined a spec for " << spec_name << ", but this is not a defined member." << endl;
             exit(1);
         }
         spec->module_decl->accept(module_updater);

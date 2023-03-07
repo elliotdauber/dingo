@@ -1,0 +1,114 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++14",
+      "-Wno-deprecated-register",
+      "-I./common",
+      "-g",
+      "-c",
+      "-o",
+      "common/dir.o",
+      "common/dir.cc"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/common/dir.cc",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/common/dir.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++14",
+      "-Wno-deprecated-register",
+      "-I./common",
+      "-g",
+      "-c",
+      "-o",
+      "compiler/parser.o",
+      "compiler/parser.tab.cc"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/compiler/parser.tab.cc",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/compiler/parser.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++14",
+      "-Wno-deprecated-register",
+      "-I./common",
+      "-g",
+      "-c",
+      "-o",
+      "compiler/lexer.o",
+      "compiler/lexer.yy.cc"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/compiler/lexer.yy.cc",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/compiler/lexer.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++14",
+      "-Wno-deprecated-register",
+      "-I./common",
+      "-g",
+      "-c",
+      "-o",
+      "compiler/main.o",
+      "compiler/main.cc"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/compiler/main.cc",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/compiler/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++14",
+      "-Wno-deprecated-register",
+      "-I./common",
+      "-g",
+      "-c",
+      "-o",
+      "compiler/orchestrator.o",
+      "compiler/orchestrator.cc"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/compiler/orchestrator.cc",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/compiler/orchestrator.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++14",
+      "-Wno-deprecated-register",
+      "-I./common",
+      "-g",
+      "-c",
+      "-o",
+      "compiler/ast.o",
+      "compiler/ast.cc"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/compiler/ast.cc",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/compiler/ast.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++14",
+      "-Wno-deprecated-register",
+      "-I./common",
+      "-g",
+      "-c",
+      "-o",
+      "compiler/visitor.o",
+      "compiler/visitor.cc"
+    ],
+    "directory": "/Users/Elliot/cs343d/final-project/dingo",
+    "file": "/Users/Elliot/cs343d/final-project/dingo/compiler/visitor.cc",
+    "output": "/Users/Elliot/cs343d/final-project/dingo/compiler/visitor.o"
+  }
+]

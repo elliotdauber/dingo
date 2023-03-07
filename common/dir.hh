@@ -25,18 +25,18 @@ public:
 class PatternInstance {
 public:
     PatternInstance();
-    PatternInstance(Pattern* pattern, int id)
+    PatternInstance(Pattern* pattern, string name)
         : pattern(pattern)
-        , id(id)
+        , name(name)
     {
     }
     Pattern* pattern;
     // vector<DModule*> modules;
-    int id;
+    string name;
 
     void print(ostream& stream)
     {
-        stream << pattern->name << id;
+        stream << name;
     }
 };
 
@@ -217,6 +217,7 @@ public:
     string label;
     string view_mode;
     string interface;
+    bool patterns;
 };
 
 class NodeGenVisitor : public Visitor {

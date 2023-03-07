@@ -25,7 +25,7 @@ SOBJ =  parser lexer
 
 FILES = $(addsuffix .cc, $(CPPOBJ))
 
-OBJS  = $(addsuffix .o, $(CPPOBJ))
+OBJS  = $(addsuffix .o, $(CPPOBJ)) 
 
 CLEANLIST =  $(addsuffix .o, $(OBJ)) $(OBJS) \
 				 compiler/parser.tab.cc compiler/parser.tab.hh \
@@ -33,7 +33,7 @@ CLEANLIST =  $(addsuffix .o, $(OBJ)) $(OBJS) \
 			    compiler/stack.hh compiler/parser.output compiler/parser.o \
 				 compiler/lexer.o compiler/lexer.yy.cc \
 
-compiler: $(COMMON_OBJ) $(FILES)
+compiler: $(COMMON_OBJ) $(FILES) parser lexer
 	$(MAKE) $(SOBJ)
 	$(MAKE) $(OBJS)
 	$(CXX) $(CXXFLAGS) $(COMMON_OBJ) -o $(BIN_DIR)/compiler $(OBJS) compiler/parser.o compiler/lexer.o $(LIBS)

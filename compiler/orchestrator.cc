@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "dir.hh"
+#include "log.hh"
 #include "orchestrator.hh"
 #include "visitor.hh"
 
@@ -39,7 +40,7 @@ void DSN::Orchestrator::parse_helper(std::istream& stream)
     try {
         scanner = new Scanner(&stream);
     } catch (std::bad_alloc& ba) {
-        std::cerr << "Failed to allocate scanner: (" << ba.what() << "), exiting!!\n";
+        Logger(ERROR) << "Failed to allocate scanner: (" << ba.what() << "), exiting!!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -48,14 +49,15 @@ void DSN::Orchestrator::parse_helper(std::istream& stream)
         parser = new Parser((*scanner) /* scanner */,
             (*this) /* orchestrator */);
     } catch (std::bad_alloc& ba) {
-        std::cerr << "Failed to allocate parser: (" << ba.what() << "), exiting!!\n";
+        Logger(ERROR) << "Failed to allocate parser: (" << ba.what() << "), exiting!!\n";
         exit(EXIT_FAILURE);
     }
     const int accept(0);
     if (parser->parse() != accept) {
-        std::cerr << "Parse failed!!\n";
+        Logger(ERROR) << "Parse failed, exiting!\n";
+        exit(EXIT_FAILURE);
     } else {
-        cout << "parsed successfully!" << endl;
+        cout << "parsed Dingofile successfully\n";
     }
     return;
 }

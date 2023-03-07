@@ -39,26 +39,26 @@ void NodeGenVisitor::visit_module_list(ModuleList* module_list)
 void NodeGenVisitor::visit_module(Module* module)
 {
     stream << module->name << " [label=\"" << module->name;
-    if (context.interface == "public" or context.interface == "all") {
+    if ((context.interface == "public" or context.interface == "all") and module->methods_with('+').size() > 0) {
         stream << "|";
         for (Method*& method : module->methods_with('+')) {
             method->print(stream);
             stream << "\\l";
         }
     }
-    if (context.interface == "private" or context.interface == "all") {
+    if ((context.interface == "private" or context.interface == "all") and module->methods_with('-').size() > 0) {
         stream << "|";
         for (Method*& method : module->methods_with('-')) {
             method->print(stream);
             stream << "\\l";
         }
     }
-    if (module->patterns.size() > 0) {
+    if (context.patterns and module->patterns.size() > 0) {
         stream << "|";
-    }
-    for (PatternInstance* pattern : module->patterns) {
-        pattern->print(stream);
-        stream << "\\l";
+        for (PatternInstance* pattern : module->patterns) {
+            pattern->print(stream);
+            stream << "\\l";
+        }
     }
     stream << "\"];" << endl;
 }

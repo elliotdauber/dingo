@@ -78,7 +78,6 @@ public:
     PatternApplierVisitor(map<string, DIR::ModuleComposite*> modules)
         : modules(modules)
         , pattern_defns()
-        , num_patterns_applied(0)
     {
     }
 
@@ -87,7 +86,6 @@ public:
 
     map<string, DIR::ModuleComposite*> modules;
     map<string, PatternDefinition*> pattern_defns;
-    size_t num_patterns_applied;
 };
 
 #endif

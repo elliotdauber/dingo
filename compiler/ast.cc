@@ -26,6 +26,15 @@ void Program::add_pattern_appl(PatternApplication* appl)
 }
 void Program::accept(Visitor* v) { v->visit_program(this); }
 
+ImportStmt::ImportStmt(string filepath)
+    : filepath(filepath)
+{
+}
+
+void ImportStmt::accept(Visitor* v)
+{
+}
+
 AbstractModuleList::AbstractModuleList(Type* type)
     : type(type)
 {
@@ -275,8 +284,9 @@ void MemberAssignmentList::accept(Visitor* v)
     v->visit_member_assignment_list(this);
 }
 
-PatternApplication::PatternApplication(string name, MemberAssignmentList* member_assignments)
-    : name(name)
+PatternApplication::PatternApplication(string pattern_name, string canonical_name, MemberAssignmentList* member_assignments)
+    : pattern_name(pattern_name)
+    , canonical_name(canonical_name)
     , member_assignments(member_assignments)
 {
 }

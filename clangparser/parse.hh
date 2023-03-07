@@ -28,7 +28,7 @@ vector<string> get_all_types(string type);
 
 string type_qualifiers(string type);
 
-class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
+class DingoCppASTVisitor : public RecursiveASTVisitor<DingoCppASTVisitor> {
 public:
     void init(ASTContext& context, set<string> mods_to_process);
 
@@ -57,23 +57,23 @@ public:
     set<string> modules_to_process;
 };
 
-class MyASTConsumer : public ASTConsumer {
+class DingoCppASTConsumer : public ASTConsumer {
 public:
-    MyASTConsumer()
+    DingoCppASTConsumer()
         : Visitor()
     {
     }
 
     virtual void HandleTranslationUnit(ASTContext& Context);
-    MyASTVisitor Visitor;
+    DingoCppASTVisitor Visitor;
 };
 
-class MyFrontendAction : public ASTFrontendAction {
+class DingoCppFrontendAction : public ASTFrontendAction {
 public:
     virtual unique_ptr<ASTConsumer> CreateASTConsumer(
         CompilerInstance& Compiler, llvm::StringRef InFile)
     {
-        return make_unique<MyASTConsumer>();
+        return make_unique<DingoCppASTConsumer>();
     }
 };
 
