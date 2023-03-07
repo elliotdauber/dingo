@@ -11,7 +11,7 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[])
 {
     po::options_description desc("Allowed options");
-    desc.add_options()("help,h", "print help message")("interface,i", po::value<string>()->default_value("public"), "interface (public, private, all, none)")("view,v", po::value<string>()->default_value("ideal"), "view mode (ideal, real, none)")("patterns,p", po::value<bool>()->default_value(false), "show patterns (0, 1)")("output,o", po::value<string>()->default_value("output.png"), "output png filepath")("label,l", po::value<string>()->default_value(""), "Graph label")("dingofile,d", po::value<string>(), "Dingofile filepath")("source-file,s", po::value<string>(), "Source filepath");
+    desc.add_options()("help,h", "print help message")("yaml,y", po::value<string>(), "yaml config file")("interface,i", po::value<string>()->default_value("public"), "interface (public, private, all, none)")("view,v", po::value<string>()->default_value("ideal"), "view mode (ideal, real, none)")("patterns,p", po::value<bool>()->default_value(false), "show patterns (0, 1)")("output,o", po::value<string>()->default_value("output.png"), "output png filepath")("label,l", po::value<string>()->default_value(""), "Graph label")("dingofile,d", po::value<string>(), "Dingofile filepath")("source-file,s", po::value<string>(), "Source filepath");
 
     po::positional_options_description p;
     p.add("dingofile", 1);

@@ -56,7 +56,7 @@ using token = DSN::Parser::token;
    return( token::STENCILED_ID );
 }
 
-[a-zA-Z_]*   {
+((\:\:)?[a-zA-Z_]+)+ {
                yylval->build< std::string >( yytext );
                return( token::ID );
              }

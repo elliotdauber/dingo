@@ -126,6 +126,14 @@ bool DingoCppASTVisitor::isInMainFile(SourceLocation loc)
     return mainFileID == locFileID;
 }
 
+bool DingoCppASTVisitor::VisitNamespaceDecl(NamespaceDecl* nd)
+{
+    string ns = nd->getName().str();
+    cout << ns << endl;
+    curr_namespace = ns + "::";
+    return true;
+}
+
 //used for out-of-class function decls
 bool DingoCppASTVisitor::VisitFunctionDecl(FunctionDecl* f)
 {
@@ -251,11 +259,13 @@ bool DingoCppASTVisitor::MyVisitFunctionDecl(FunctionDecl* f)
 bool DingoCppASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
 {
     string class_name = Decl->getNameAsString();
-
+    cout << class_name << endl;
     if (!modules_to_process.count(class_name)) {
         curr_module = nullptr;
         return true;
     }
+
+    // cout << class_name << endl;
 
     if (!modules.count(class_name)) {
         modules[class_name] = new DIR::Module(class_name);
@@ -297,16 +307,14 @@ bool DingoCppASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
 
 bool DingoCppASTVisitor::VisitVarDecl(VarDecl* v)
 {
-    // if (!isInMainFile(v->getSourceRange().getBegin()))
-    //     return true;
     if (curr_module == nullptr) {
         return true;
     }
-    // cout << "In variable decl: " << v->getNameAsString() << endl;
     QualType varType = v->getType();
     string var_type = cleanup_type(varType.getAsString());
     // cout << "Variable type: " << var_type << endl;
-    add_dependency(varType.getAsString());
+    cout << "In variable decl: " << var_type << endl;
+    add_dependency(var_type);
     if (v->hasInit()) {
         TraverseStmt(v->getInit());
     }
@@ -315,8 +323,6 @@ bool DingoCppASTVisitor::VisitVarDecl(VarDecl* v)
 
 bool DingoCppASTVisitor::VisitCXXConstructExpr(CXXConstructExpr* c)
 {
-    // if (!isInMainFile(c->getSourceRange().getBegin()))
-    //     return false;
     if (curr_module == nullptr) {
         return true;
     }
@@ -333,8 +339,6 @@ bool DingoCppASTVisitor::VisitCXXConstructExpr(CXXConstructExpr* c)
 
 bool DingoCppASTVisitor::VisitCXXMemberCallExpr(CXXMemberCallExpr* expr)
 {
-    // if (!isInMainFile(expr->getSourceRange().getBegin()))
-    //     return true;
     if (curr_module == nullptr) {
         return true;
     }

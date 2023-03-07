@@ -1,0 +1,7 @@
+label: Dingo
+source-file: /Users/Elliot/cs343d/final-project/dingo/verifier/main.cc
+dingofile: /Users/Elliot/cs343d/final-project/dingo/dingo.dsn
+output-file: output.png
+interface: none
+view: real
+patterns: true

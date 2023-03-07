@@ -1,4 +1,4 @@
-define pattern Visitor {
+define pattern PVisitor {
     acceptors : module[];
     visitor_base : module;
     visitors : module[];
@@ -13,22 +13,24 @@ define pattern Visitor {
         }
     }
 
-    spec visitors < Visitor : [acceptors] {
+    spec visitors < visitor_base : [acceptors] {
         for a in [acceptors] : {
             + a <visit_{a}>(a*);
         }
     }
 }
 
-module Visitor;
-module NodeGenVisitor;
-module EdgeGenVisitor;
+module DIR::Visitor;
+module DIR::NodeGenVisitor;
+module DIR::EdgeGenVisitor;
+module DIR::GraphContext;
 
-apply pattern Visitor as the_visitor {
+apply pattern PVisitor as VerifierVisitor {
     acceptors: [PatternDefinition];
-    visitor_base: Visitor;
-    visitors: [NodeGenVisitor, EdgeGenVisitor];
+    visitor_base: DIR::Visitor;
+    visitors: [DIR::NodeGenVisitor, DIR::EdgeGenVisitor];
 }
+module DIR::Verifier : [DIR::EdgeGenVisitor, DIR::NodeGenVisitor, DIR::GraphContext];
+
 module ProgramNode;
 module PatternDefinition < ProgramNode;
-module Verifier : [EdgeGenVisitor, NodeGenVisitor];

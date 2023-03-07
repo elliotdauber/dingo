@@ -36,6 +36,8 @@ public:
     //used for out-of-class function decls
     bool VisitFunctionDecl(FunctionDecl* f);
 
+    bool VisitNamespaceDecl(NamespaceDecl* nd);
+
     bool VisitDeclRefExpr(DeclRefExpr* expr);
 
     //custom function, used for class function decls
@@ -55,6 +57,7 @@ public:
     map<string, DIR::Module*> modules;
     ASTContext* astContext;
     set<string> modules_to_process;
+    string curr_namespace;
 };
 
 class DingoCppASTConsumer : public ASTConsumer {
