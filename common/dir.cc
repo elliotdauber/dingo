@@ -110,8 +110,25 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
                 return p->name == parent_name;
             });
             if (find_it == target_module->parents.end()) {
-                Logger(ERROR) << "Error: In the target code, the module " << module_name << " has parent " << parent_name << ", but this was not specified in the Dingofile.\n";
+                Logger(ERROR) << "Error: In the code, the module " << module_name << " has parent " << parent_name << ", but this was not specified in the Dingofile.\n";
                 return false;
+            }
+        }
+
+        //TODO: this disallows overloaded methods
+        for (Method* tester_method : tester_module->methods) {
+            string method_name = tester_method->name;
+            auto find_it = find_if(target_module->methods.begin(), target_module->methods.end(), [&method_name](const Method* m) {
+                return m->name == method_name;
+            });
+            if (find_it != target_module->methods.end()) {
+                //found a method with the same name in the target
+                if (!(*tester_method == **find_it)) {
+                    Logger(ERROR) << "Error: In the code, the method " << method_name << " in module " << module_name << " has the incorrect signature. Check the Dingofile for the correct signature.\n";
+                    exit(1);
+                }
+            } else {
+                Logger(WARNING) << "Warning. In the Dingofile, the method " << method_name << " in module " << module_name << " is declared, but is not used in the code.\n";
             }
         }
     }

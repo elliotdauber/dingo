@@ -244,6 +244,12 @@ bool DingoCppASTVisitor::MyVisitFunctionDecl(FunctionDecl* f)
             decorators += "@";
         }
 
+        if (CXXMethodDecl* method = dyn_cast<CXXMethodDecl>(f)) {
+            if (method->size_overridden_methods() > 0) {
+                decorators += "#";
+            }
+        }
+
         // cout << "Function " << func_name << " in class " << class_name << " has decorators " << decorators << endl;
 
         DIR::Method* method = new DIR::Method(decorators, return_full_type, func_name, param_types);

@@ -1,0 +1,16 @@
+import ../../dingofiles/router.dingo;
+
+module MessagePasser;
+module IMessage;
+module IMessagable;
+
+module Ghost;
+module Player;
+module Tree;
+
+apply pattern Router as MessagePasserRouter {
+    router: MessagePasser;
+    subscriber_base: IMessagable;
+    message_base: IMessage;
+    subscribers: [Ghost, Player, Tree];
+}
