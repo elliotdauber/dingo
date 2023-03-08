@@ -2,9 +2,9 @@
   "name": "dingo",
   "displayName": "Dingo",
   "description": "Syntax highlighting for Dingo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
-    "vscode": "^1.76.0"
+    "vscode": "1.64.0"
   },
   "categories": [
     "Programming Languages"
@@ -14,7 +14,11 @@
       "id": "dingo",
       "aliases": ["Dingo", "dingo"],
       "extensions": [".dingo"],
-      "configuration": "./language-configuration.json"
+      "configuration": "./language-configuration.json",
+      "icon": {
+        "dark": "./icons/rocky-music-3.svg",
+        "light": "./icons/rocky-music-3.svg"
+      }
     }],
     "grammars": [{
       "language": "dingo",

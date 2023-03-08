@@ -33,7 +33,7 @@ using token = DSN::Parser::token;
             /* int n = 0; */
 %}
 
-\/\/.*\n {}
+\/\/.*\n {loc->lines();}
 
 "define"       {return(token::DEFINE);}
 

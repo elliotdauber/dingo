@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cctype>
 #include <fstream>
+#include <filesystem>
 
 #include "dir.hh"
 #include "log.hh"
@@ -9,56 +10,52 @@
 
 DSN::Orchestrator::~Orchestrator()
 {
-    delete (scanner);
-    scanner = nullptr;
-    delete (parser);
-    parser = nullptr;
 }
 
 void DSN::Orchestrator::parse(string& filename)
 {
-    std::ifstream in_file(filename);
-    if (!in_file.good()) {
-        cout << "bad file in Orchestrator::parse" << endl;
-        exit(EXIT_FAILURE);
+    string full_filepath = "";
+    if (std::__fs::filesystem::path(filename).is_relative()
+        and dir_stack.size() > 0) {
+        full_filepath = dir_stack.back() + "/";
     }
-    parse_helper(in_file);
-}
+    full_filepath += filename;
 
-void DSN::Orchestrator::parse(std::istream& stream)
-{
-    if (!stream.good() && stream.eof()) {
+    std::__fs::filesystem::path path = std::__fs::filesystem::canonical(full_filepath);
+    std::__fs::filesystem::path directory = path.parent_path();
+    std::__fs::filesystem::path file = path.filename();
+
+    // cout << "Directory: " << directory << endl;
+    // cout << "File: " << file << endl;
+
+    dir_stack.push_back(directory.string());
+
+    string absolute_filepath = directory.string() + "/" + file.string();
+
+    if (files_parsed.count(absolute_filepath)) {
         return;
     }
-    parse_helper(stream);
-}
+    files_parsed.insert(absolute_filepath);
 
-void DSN::Orchestrator::parse_helper(std::istream& stream)
-{
-
-    delete (scanner);
-    try {
-        scanner = new Scanner(&stream);
-    } catch (std::bad_alloc& ba) {
-        Logger(ERROR) << "Failed to allocate scanner: (" << ba.what() << "), exiting!!\n";
+    cout << "Parsing " << absolute_filepath << endl;
+    ifstream in_file(absolute_filepath);
+    if (!in_file.good()) {
+        cout << "Bad file in Orchestrator::parse" << endl;
         exit(EXIT_FAILURE);
     }
 
-    delete (parser);
-    try {
-        parser = new Parser((*scanner) /* scanner */,
-            (*this) /* orchestrator */);
-    } catch (std::bad_alloc& ba) {
-        Logger(ERROR) << "Failed to allocate parser: (" << ba.what() << "), exiting!!\n";
-        exit(EXIT_FAILURE);
-    }
-    const int accept(0);
-    if (parser->parse() != accept) {
-        Logger(ERROR) << "Parse failed, exiting!\n";
+    Scanner* scanner = new Scanner(&in_file);
+    Parser* parser = new Parser(*scanner, *this);
+    if (parser->parse() != 0) {
+        Logger(ERROR) << "Parse failed for " << absolute_filepath << ", exiting!\n";
         exit(EXIT_FAILURE);
     } else {
-        cout << "parsed Dingofile successfully\n";
+        cout << "Parsed " << absolute_filepath << " successfully\n";
     }
+
+    dir_stack.pop_back();
+
+    in_file.close();
     return;
 }
 
@@ -74,8 +71,8 @@ void DSN::Orchestrator::lower()
     modules = applier->modules;
 }
 
-std::ostream&
-DSN::Orchestrator::print(std::ostream& stream)
+ostream&
+DSN::Orchestrator::print(ostream& stream)
 {
     DIR::Verifier v;
     DIR::GraphContext context;

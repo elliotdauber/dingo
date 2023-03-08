@@ -134,8 +134,8 @@ void ModuleUpdaterVisitor::visit_module_method(ModuleMethod* method)
     if (foreach_bindings.count(ret_type)) {
         ret_type = foreach_bindings[ret_type];
     } else if (!modules.count(ret_type)) {
-        cerr << "Return type " << ret_type << " in method " << name << " is unknown." << endl;
-        exit(1);
+        // cerr << "Return type " << ret_type << " in method " << name << " is unknown." << endl;
+        // exit(1);
     } else {
         DIR::ModuleComposite* composite = modules[ret_type];
         if (composite->kind() == DIR::ModuleComposite::Kind::List) {
@@ -159,8 +159,8 @@ void ModuleUpdaterVisitor::visit_module_method(ModuleMethod* method)
         if (foreach_bindings.count(arg_type)) {
             arg_type = foreach_bindings[arg_type];
         } else if (!modules.count(arg_type)) {
-            cerr << "Arg type " << arg_type << " in method " << name << " is unknown." << endl;
-            exit(1);
+            // cerr << "Arg type " << arg_type << " in method " << name << " is unknown." << endl;
+            // exit(1);
         } else {
             DIR::ModuleComposite* composite = modules[arg_type];
             if (composite->kind() == DIR::ModuleComposite::Kind::List) {

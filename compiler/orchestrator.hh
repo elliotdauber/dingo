@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <istream>
 #include <string>
+#include <vector>
 
 #include "ast.hh"
 #include "dir.hh"
@@ -25,11 +26,6 @@ public:
     * @param filename - valid string with input file
     */
     void parse(string& filename);
-    /** 
-    * parse - parse from a c++ input stream
-    * @param is - istream&, valid input stream
-    */
-    void parse(istream& iss);
 
     void lower();
 
@@ -40,12 +36,7 @@ public:
     ostream& print(ostream& stream);
 
     map<string, DIR::Module*> get_modules();
-
 private:
-    void parse_helper(istream& stream);
-    Parser* parser = nullptr;
-    Scanner* scanner = nullptr;
-
     Program* program = new Program();
 
     const string red = "\033[1;31m";
@@ -53,6 +44,9 @@ private:
     const string norm = "\033[0m";
 
     map<string, DIR::ModuleComposite*> modules;
+
+    vector<string> dir_stack = vector<string>();
+    set<string> files_parsed = set<string>();
 };
 
 }
