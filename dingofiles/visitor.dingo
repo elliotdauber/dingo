@@ -8,7 +8,7 @@ define pattern Visitor {
 
     spec visitor_base : [acceptors] {
         for a in [acceptors] : {
-            +@ a <visit_{a}>(a*);
+            +@ a %visit_{a}%(a*);
         }
     }
 }

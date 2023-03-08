@@ -51,6 +51,10 @@
 			{
 				"name": "storage.type.return-type",
 				"match": "(?<=\\bfor\\s)\\w+\\b"
+			},
+			{
+				"name": "string.quoted",
+				"match": "(?<=\\bimport\\s)[\\w./-]+\\b"
 			}]
 		},
 		"decorators": {
