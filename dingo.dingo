@@ -4,23 +4,24 @@ define pattern PVisitor {
     visitors: module[];
 
     spec acceptors : [visitor_base] {
-        + visitor_base accept(visitor_base*);
+        + visitor_base accept(visitor_base*, a);
     }
 
     spec visitor_base : [acceptors] {
         for a in [acceptors] : {
-            +@ a <visit_{a}>(a*);
+            +@ a %visit_{a}%(a*);
         }
     }
 
+    //comment lfg
     spec visitors < visitor_base : [acceptors] {
         for a in [acceptors] : {
-            + a <visit_{a}>(a*);
+            +# a %visit_{a}%(a*);
         }
     }
 }
 
-module Visitor;
+module Visitor; //another one
 module NodeGenVisitor;
 module EdgeGenVisitor;
 module GraphContext;

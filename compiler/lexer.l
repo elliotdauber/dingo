@@ -33,6 +33,8 @@ using token = DSN::Parser::token;
             /* int n = 0; */
 %}
 
+\/\/.*\n {}
+
 "define"       {return(token::DEFINE);}
 
 "apply"       {return(token::APPLY);}
@@ -51,7 +53,7 @@ using token = DSN::Parser::token;
 
 "as"            {return(token::AS);}
 
-\<((\{[a-zA-Z_]+\})|[a-zA-Z])([a-zA-Z_]*(\{[a-zA-Z_]+\})*)*\> {
+\%((\{[a-zA-Z_]+\})|[a-zA-Z])([a-zA-Z_]*(\{[a-zA-Z_]+\})*)*\% {
    yylval->build< std::string >( yytext );
    return( token::STENCILED_ID );
 }
@@ -66,7 +68,7 @@ using token = DSN::Parser::token;
                return( token::FILEPATH );
              }
 
-[\-\+\@\$]  {
+[\-\+\@\$\#]  {
                yylval->build< std::string >( yytext );
                return( token::DECORATOR );
             }

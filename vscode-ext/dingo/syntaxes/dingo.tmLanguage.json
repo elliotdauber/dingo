@@ -3,22 +3,34 @@
 	"name": "Dingo",
 	"patterns": [
 		{
+			"include": "#comments"
+		},
+		{
 			"include": "#keywords"
 		},
 		{
 			"include": "#decorators"
 		},
 		{
-			"include": "#functions"
-		},
-		{
-			"include": "#punctuation"
+			"include": "#str_templates"
 		},
 		{
 			"include": "#ids"
+		},
+		{
+			"include": "#function_args"
+		},
+		{
+			"include": "#punctuation"
 		}
 	],
 	"repository": {
+		"comments": {
+			"patterns": [{
+				"name": "comment.line.double-slash",
+				"match": "//.*$"
+			}]
+		},
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.dingo",
@@ -35,30 +47,49 @@
 			{
 				"name": "entity.name.function",
 				"match": "(?<=\\bspec\\s)\\w+\\b"
+			},
+			{
+				"name": "storage.type.return-type",
+				"match": "(?<=\\bfor\\s)\\w+\\b"
 			}]
 		},
 		"decorators": {
 			"patterns": [{
 				"name": "keyword.other.decorator",
-				"match": "[\\-+@$]"
+				"match": "[\\-+@$#]"
 			}]
 		},
 		"punctuation": {
-			"patterns": [{
-				"name": "punctuation.definition",
-				"match": "[{}\\[\\]()\\:,;<>]"
-			}]
-		},
-		"functions": {
 			"patterns": [
 				{
-					"name": "function.declaration",
-					"match": "(\\b\\w+\\b)\\s+(\\b[\\<\\{\\}\\>\\w]+\\b)\\s*\\((\\b[^\\)]\\b)\\)",
-					"captures": {
-						"1": { "name": "storage.type.return-type" },
-						"2": { "name": "entity.name.function" },
-						"3": { "name": "meta.function.arguments" }
-					}
+					"name": "punctuation.definition",
+					"match": "[{}\\[\\]\\(\\):,;<>]"
+				},
+				{
+					"name": "comment.line",
+					"match": "%"
+				}
+			]
+		},
+		"str_templates": {
+			"patterns": [{
+				"name": "storage.type.return-type",
+				"begin": "\\{",
+				"end": "\\}",
+				"match": "(?<=\\{)\\w+(?=\\})"
+			  }]
+		},
+		"function_args": {
+			"begin": "\\(",
+			"end": "\\)",
+			"patterns": [
+				{
+					"name": "variable.parameter.function",
+					"match": "(?<=[\\(,])[^,]+(?=[\\),])"
+				},
+				{
+					"name": "punctuation.definition",
+					"match": ","
 				}
 			]
 		},
