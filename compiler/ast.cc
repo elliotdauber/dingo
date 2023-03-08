@@ -111,9 +111,11 @@ MethodArgList::MethodArgList()
 {
 }
 MethodArgList::MethodArgList(MethodArgList* init_list, MethodArg* new_item)
-    : items(init_list->items)
+    : items{new_item}
 {
-    items.push_back(new_item);
+    for (MethodArg* arg : init_list->items) {
+        items.push_back(arg);
+    }
 }
 MethodArgList::MethodArgList(MethodArg* item)
     : items({ item })

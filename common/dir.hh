@@ -28,15 +28,18 @@ public:
     PatternInstance(Pattern* pattern, string name)
         : pattern(pattern)
         , name(name)
+        , fields()
     {
     }
     Pattern* pattern;
-    // vector<DModule*> modules;
     string name;
+
+    //map from module name to pattern field name
+    map<string, string> fields;
 
     void print(ostream& stream)
     {
-        stream << name;
+        stream << name << " (" << pattern->name << ")";
     }
 };
 
