@@ -16,8 +16,8 @@
       "extensions": [".dingo"],
       "configuration": "./language-configuration.json",
       "icon": {
-        "dark": "./icons/rocky-music-3.svg",
-        "light": "./icons/rocky-music-3.svg"
+        "dark": "./icons/med.svg",
+        "light": "./icons/med.svg"
       }
     }],
     "grammars": [{
