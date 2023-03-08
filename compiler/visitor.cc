@@ -271,6 +271,7 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
                     exit(1);
                 }
                 DIR::ModuleComposite* composite = modules[assignment_modules[k]->name];
+                pat_instance->fields[assignment_modules[k]->name] = member_name;
                 module_list->add(composite);
             }
 
@@ -283,6 +284,7 @@ void PatternApplierVisitor::visit_pattern_appl(PatternApplication* pattern_appl)
                 exit(1);
             }
             modules[defn_member->name] = modules[assignment_modules[0]->name];
+            pat_instance->fields[assignment_modules[0]->name] = member_name;
         }
 
         DIR::ModuleComposite* mod_comp = modules[defn_member->name];

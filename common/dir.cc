@@ -53,11 +53,11 @@ void NodeGenVisitor::visit_module(Module* module)
             stream << "\\l";
         }
     }
-    if (context.patterns and module->patterns.size() > 0) {
-        stream << "|";
+    if (context.patterns) {
         for (PatternInstance* pattern : module->patterns) {
+            stream << "|";
             pattern->print(stream);
-            stream << "\\l";
+            stream << "\\l" << pattern->fields[module->name] << "\\l";
         }
     }
     stream << "\"];" << endl;
