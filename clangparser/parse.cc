@@ -265,7 +265,7 @@ bool DingoCppASTVisitor::MyVisitFunctionDecl(FunctionDecl* f)
 bool DingoCppASTVisitor::VisitCXXRecordDecl(CXXRecordDecl* Decl)
 {
     string class_name = Decl->getNameAsString();
-    cout << class_name << endl;
+    // cout << class_name << endl;
     if (!modules_to_process.count(class_name)) {
         curr_module = nullptr;
         return true;
@@ -319,7 +319,7 @@ bool DingoCppASTVisitor::VisitVarDecl(VarDecl* v)
     QualType varType = v->getType();
     string var_type = cleanup_type(varType.getAsString());
     // cout << "Variable type: " << var_type << endl;
-    cout << "In variable decl: " << var_type << endl;
+    // cout << "In variable decl: " << var_type << endl;
     add_dependency(var_type);
     if (v->hasInit()) {
         TraverseStmt(v->getInit());

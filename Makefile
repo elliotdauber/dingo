@@ -67,6 +67,7 @@ clangparser/%.o: clangparser/%.cc
 
 verifier: $(COMMON_OBJ) $(COMPILER_OBJ_WITHOUT_MAIN) $(CLANGPARSER_OBJ_WITHOUT_MAIN) $(VERIFIER_OBJ)
 	$(CXX) $(CXXFLAGS) $(CLANGCXXFLAGS) -I./clangparser $(COMMON_OBJ) $(COMPILER_OBJ_WITHOUT_MAIN) $(CLANGPARSER_OBJ_WITHOUT_MAIN) $(VERIFIER_OBJ) $(LIBS) -o $(BIN_DIR)/dingo $(LDFLAGS) $(CLANGLDFLAGS) -L/usr/local/lib -lboost_program_options
+	cp $(BIN_DIR)/dingo /usr/local/bin
 
 verifier/%.o: verifier/%.cc
 	$(CXX) $(CXXFLAGS) $(CLANGCXXFLAGS) -I./clangparser -c $< -o $@

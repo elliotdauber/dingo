@@ -124,7 +124,11 @@ bool Verifier::do_modules_conform(map<string, Module*> target, map<string, Modul
             if (find_it != target_module->methods.end()) {
                 //found a method with the same name in the target
                 if (!(*tester_method == **find_it)) {
-                    Logger(ERROR) << "Error: In the code, the method " << method_name << " in module " << module_name << " has the incorrect signature. Check the Dingofile for the correct signature.\n";
+                    Logger(ERROR) << "Error: In the code, the method " << method_name << " in module " << module_name << " has the incorrect signature. In the Dingofile, it is defined as ";
+                    (*find_it)->print();
+                    Logger(ERROR) << " but in the code it is defined as ";
+                    tester_method->print();
+                    Logger(ERROR) << "\n";
                     exit(1);
                 }
             } else {

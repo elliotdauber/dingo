@@ -13,7 +13,7 @@ EXECUTABLE = presentation
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): main.cpp $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -I $(INC_DIR) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -I$(INC_DIR) $^ -o $@
 
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDES)
 	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -c $< -o $@
