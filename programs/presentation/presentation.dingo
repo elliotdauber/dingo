@@ -1,12 +1,18 @@
 import ../../dingofiles/router.dingo;
+import ../../dingofiles/singleton.dingo;
 
 module MessagePasser;
-module IMessage;
-module IMessagable;
+module Message;
+module ScareMessage < Message;
+module Messagable;
 
-module Ghost;
-module Player;
-module Tree;
+module Ghost < Messagable;
+module Tree < Messagable;
+module Player < Messagable;
+
+module Game : [Ghost, Player, Tree, Config] {
+    + void play()
+}
 
 apply pattern Router as MessagePasserRouter {
     router: MessagePasser;
@@ -14,3 +20,13 @@ apply pattern Router as MessagePasserRouter {
     message_base: IMessage;
     subscribers: [Ghost, Player, Tree];
 }
+
+module Config {
+    + int get_frame_rate();
+}
+
+apply pattern Singleton as Confingleton {
+    singleton: Config;
+}
+
+

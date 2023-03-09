@@ -1,22 +1,24 @@
+
 define pattern Router {
     router: module;
-    subscriber_base: module;
+    entity_base: module;
+    entities: module[];
     message_base: module;
-    subscribers: module[];
 
-    spec router : [subscriber_base] {
-        + void register(subscriber_base*);
-        // send to all
-        + void broadcast(subscriber_base*, message_base*);
-        // send to an id
-        + void send(subscriber_base*, message_base*, int);
+    spec router : [entity_base] {
+        + void register(entity_base*);
+        + void broadcast(entity_base*, message_base*);
+        + void send(entity_base*, message_base*, int);
     }
     
-    spec subscriber_base : [message_base] {
+    spec entity_base : [message_base] {
         +@ void accept(message_base*);
     }
 
-    spec subscribers < subscriber_base : [message_base] {
+    spec entities < entity_base : [message_base] {
         +# void accept(message_base*);
     }
 }
+
+
+
