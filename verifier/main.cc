@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
         cout << desc << "\n";
         return 1;
     }
-
+    
     string output_file = vm["output"].as<string>();
     string dingofile = vm["dingofile"].as<string>();
     string source_file = vm["source-file"].as<string>();
